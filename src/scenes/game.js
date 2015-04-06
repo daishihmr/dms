@@ -79,13 +79,20 @@ tm.define("GameScene", {
                             x: SCREEN_WIDTH - 20,
                             y: 20,
                             displayScore: 0,
+                            bs: 0,
+                            unit: 0,
                             update: function() {
-                                if (23 < gameScene.score - this.displayScore) {
-                                    this.displayScore += 23;
+                                if (this.bs !== gameScene.score) {
+                                    this.unit = Math.floor((gameScene.score - this.displayScore) / 9);
+                                }
+                                if (this.unit < gameScene.score - this.displayScore) {
+                                    this.displayScore += this.unit;
                                 } else if (this.displayScore < gameScene.score) {
                                     this.displayScore = gameScene.score;
                                 }
                                 this.text = this.displayScore + " 点";
+
+                                this.bs = gameScene.score;
                             }
                         },
                         stepLabel: {
@@ -236,7 +243,7 @@ tm.define("GameScene", {
                 this.enemyInterval += 10;
             }
             // var et = this.mt.nextInt(100);
-            var et = 0;
+            var et = 50;
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;

@@ -2054,7 +2054,7 @@ bulletml.runner.Runner = function() {
 };
 bulletml.runner.Runner.prototype = {
     constructor: bulletml.runner.Runner,
-    update: function(x, y) {},
+    update: function() {},
     onVanish: function() {},
     /**
      * @param {string} eventName
@@ -2090,16 +2090,11 @@ bulletml.runner.ParentRunner.prototype.addSubRunner = function(subRunner) {
 /**
  * @override
  */
-bulletml.runner.ParentRunner.prototype.update = function(x, y) {
-    if (arguments.length === 2) {
-        this.x = x;
-        this.y = y;
-    }
-
+bulletml.runner.ParentRunner.prototype.update = function() {
     for (var i = this.subRunners.length; i--;) {
         this.subRunners[i].x = this.x;
         this.subRunners[i].y = this.y;
-        this.subRunners[i].update(x, y);
+        this.subRunners[i].update();
     }
     if (this.completedChildCount === this.subRunners.length) {
         this.completed = true;
@@ -2107,8 +2102,6 @@ bulletml.runner.ParentRunner.prototype.update = function(x, y) {
 };
 
 /**
- * linear motion of uniform acceleration
- *
  * @constructor
  * @extends {bulletml.runner.Runner}
  * @param {Object} config
@@ -2179,13 +2172,8 @@ bulletml.runner.SubRunner.prototype = Object.create(bulletml.runner.SimpleSubRun
 /**
  * @override
  */
-bulletml.runner.SubRunner.prototype.update = function(x, y) {
+bulletml.runner.SubRunner.prototype.update = function() {
     if (this.stop) return;
-
-    if (arguments.length === 2) {
-        this.x = x;
-        this.y = y;
-    }
 
     this.age += 1;
 

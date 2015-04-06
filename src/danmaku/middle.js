@@ -69,12 +69,46 @@
     };
 
     Danmaku.middle.push(new bulletml.Root({
-        top: action([
+        top1: action([
             repeat(999, [
-                wait(20),
-                fire(speed(5), BL),
+                wait(50),
+                repeat(4, [
+                    fire(direction(180 + 90, "absolute"), speed(30), IVS(actionRef("bit"))),
+                    fire(direction(180 - 90, "absolute"), speed(30), IVS(actionRef("bit"))),
+                    wait(5),
+                ]),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(direction(180 - 4, "absolute"), speed(4), RCS),
+            fire(direction(180 + 4, "absolute"), speed(4), RCS),
+            vanish(),
+        ]),
+        top2: action([
+            repeat(999, [
+                wait(90),
+                fire(speed(3), IVS),
+                repeat(6, [
+                    fire(direction(0, "sequence"), speed(0.4, "sequence"), BS),
+                ]),
             ]),
         ]),
     }));
 
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            wait(100),
+            repeat(999, [
+                fire(IVS),
+                repeat(10, [
+                    fire(direction(0, "sequence"), speed(12), BCL),
+                    wait(3),
+                ]),
+                wait(100),
+            ]),
+        ]),
+    }));
+
+    Danmaku.middle = [Danmaku.middle.last];
 })();
