@@ -159,8 +159,7 @@ tm.define("GameScene", {
                 gameScene.tweener
                     .wait(3000)
                     .call(function() {
-                        gameScene.nextLabel = "title";
-                        gameScene.app.popScene();
+                        gameScene.gameover();
                     });
             }
         });
@@ -237,11 +236,8 @@ tm.define("GameScene", {
 
         this.countDown -= 1;
         if (this.countDown <= 0) {
-            this.enemyInterval = Math.max(this.enemyInterval - 1, 40);
+            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_ITERVAL_DECR, 40);
             this.step += 1;
-            if (this.step % 20 === 0) {
-                this.enemyInterval += 10;
-            }
             // var et = this.mt.nextInt(100);
             var et = 50;
             if (et < 50) {
@@ -261,6 +257,23 @@ tm.define("GameScene", {
         if (this.player.muteki) {
             this.eraseAllBullets(false);
         }
+    },
+
+    gameover: function() {
+        var gameScene = this;
+
+        tm.display.RectangleShape({
+            width: SCREEN_WIDTH,
+            height: SCREEN_HEIGHT,
+            fillStyle: "black",
+            strokeStyle: "transparent",
+        })
+            .setOrigin(0, 0)
+            .setAlpha(0)
+            .addChildTo(this.hmdLayer)
+            .tweener.fadeIn(1000).call(function() {
+                gameScene.app.popScene();
+            });
     },
 
     addScore: function(score) {

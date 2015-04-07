@@ -44,6 +44,7 @@ tm.define("CanvasLayer", {
         this.setOrigin(0, 0);
 
         this.canvas = tm.graphics.Canvas(canvas);
+        this.domElement = tm.dom.Element(canvas);
 
         this.renderer = tm.display.CanvasRenderer(this.canvas);
 
@@ -67,7 +68,40 @@ tm.define("CanvasLayer", {
     }
 });
 
+CanvasLayer.prototype.accessor.visible = {
+    get: function() {
+        return this.domElement.visible;
+    },
+    set: function(v) {
+        this.domElement.visible = v;
+    }
+};
+
+var APP_URL = "http://www.dev7.jp";
+var TITLE_TWEET = "たまを　よけろ";
+var RESULT_URL = TITLE_TWEET + " SCORE: {score} flick";
+var TARGET = 'release';
+
+var FONT_CODE = {
+    play: '0xf04b',
+    home: '0xf015',
+    comment: '0xf075',
+    apple: '0xf179',
+    android: '0xf17b',
+    trophy: '0xf091',
+    gamepad: '0xf11b',
+    shareAlt: '0xf1e0',
+    buysellads: '0xf20d',
+    pause: '0xf04c',
+
+    arrowRight: '0xf061',
+    longArrowRight: '0xf178',
+    handORight: '0xf0a4',
+    angleRight: '0xf106',
+};
+
 var ASSETS = {
+    "unifont": "assets/unip.ttf",
     "bullet": "assets/bullets.png",
     "sound/bgm": "assets/nc91440.mp3",
     "sound/miss": "assets/sei_ge_garasu_kudake02.mp3",
@@ -86,7 +120,7 @@ var SCREEN_HEIGHT = 960;
 var W = SCREEN_WIDTH;
 var H = W * 1.2;
 
-var PLAYER_SPEED = 2.5;
+var PLAYER_SPEED = 2.0;
 
 var BIT_COUNT = 4;
 var BIT_DISTANCE = 6;
@@ -104,6 +138,75 @@ var ENEMY_MIDDLE_HP = 10;
 var ENEMY_LARGE_HP = 50;
 
 var EXTEND_SCORE = 100000;
+
+var ENEMY_ITERVAL_DECR = 3;
+
+var isNative = function() {
+    return window.cordovaFlag === true;
+};
+
+var showAd = function() {
+    if (window.cordovaFlag) {
+        if(window.AdMob) {
+            AdMob.prepareInterstitial( {adId:admobid.interstitial, autoShow:true} );
+        }
+    }
+};
+
+var clickAdCallback = function() {
+    alert('onInterstitialLeaveApp');
+};
+
+document.addEventListener('onInterstitialLeaveApp', function(){
+    clickAdCallback && clickAdCallback();
+});
+
+
+document.addEventListener('onInterstitialDismiss', function(){
+    // 広告を閉じた際のコールバック
+    // alert('onInterstitialDismiss');
+    // AdMob.prepareInterstitial( {adId:admobid.interstitial, autoShow:false} );
+});
+
+var UserData = {
+    init: function(strong) {
+        var defaults = {
+            life: 5,
+            bestScore: 0,
+        };
+
+        var data = this.get();
+
+        if (strong) {
+            data.$extend(defaults);
+        }
+        else {
+            data.$safe(defaults);
+        }
+
+        this.set(data);
+    },
+    get: function() {
+        var key = location.pathname.toCRC32();
+        var data = localStorage.getItem(key);
+        return (data) ? JSON.parse(data) : {};
+    },
+    set: function(data) {
+        var key = location.pathname.toCRC32();
+        var dataString = JSON.stringify(data);
+        localStorage.setItem(key, dataString);
+        return this;
+    },
+    hasLife: function() {
+        var data = this.get();
+        return data.life >= 1;
+    },
+};
+
+// ユーザーデータ初期化
+(function() {
+    UserData.init();
+})();
 
 var Danmaku = {};
 Danmaku.param = null;
@@ -737,6 +840,366 @@ tm.define("Background", {
             .fillRect(0, 0, W, H);
     }
 });
+
+
+
+tm.define("CircleButton", {
+    superClass: "tm.display.CanvasElement",
+
+    init: function(param) {
+        this.superInit();
+
+        param = param || {};
+
+        param.$safe({
+            size: 150,
+            text: 'A',
+            fontFamily: 'FontAwesome',
+            fontColor: "white",
+            bgColor: "hsl(180, 60%, 50%)",
+            strokeColor: "transparent",
+            lineWidth: 4,
+        });
+
+        this.fromJSON({
+            children: {
+                bg: {
+                    type: "tm.display.Shape",
+                    init: {
+                        width: param.size,
+                        height: param.size,
+                    }
+                },
+                label: {
+                    type: "tm.display.Label",
+                    init: param.text,
+                    fillStyle: param.fontColor,
+                    fontFamily: param.fontFamily,
+                    fontSize: param.size/2,
+                }
+            }
+        });
+
+        this.setInteractive(true, "circle");
+        this.on("pointingend", function() {
+            this.flare('push');
+        });
+
+        this.fillFlag = param.fillFlag;
+
+        this.lineWidth = param.lineWidth;
+        this.strokeColor = param.strokeColor;
+        this.bgColor = param.bgColor;
+        this.radius = param.size/2;
+        this._render();
+    },
+    _render: function() {
+        var c = this.bg.canvas;
+        c.setTransformCenter();
+        c.fillStyle = this.bgColor;
+        c.fillCircle(0, 0, this.radius);
+
+        c.lineWidth = this.lineWidth;
+        c.strokeStyle = this.strokeColor;
+        c.strokeCircle(0, 0, this.radius-this.lineWidth/2-1);
+    },
+
+    fill: function() {
+        this.parent.children.each(function(elm) {
+            elm.tweener.clear().fadeOut(200)
+        });
+
+        var c = this.bg.canvas;
+        this.bg.width = SCREEN_WIDTH;
+        this.bg.height= SCREEN_HEIGHT;
+        this._render();
+
+        this.setInteractive(false);
+
+        this.label.tweener
+            .clear()
+            .fadeOut(200)
+            ;
+
+        this.tweener
+            .clear()
+            .wait(300)
+            .to({
+                x: SCREEN_CENTER_X,
+                y: SCREEN_CENTER_Y,
+            }, 300, 'easeOutQuint')
+            .call(function() {
+                tm.asset.Manager.get("sounds/warp").clone().play();
+            })
+            .to({
+                radius: 600,
+            }, 500, 'easeOutQuint')
+            .call(function() {
+                this.flare('filled');
+            }, this)
+            ;
+
+        this.update = function() {
+            this._render();
+        };
+    },
+
+    blink: function() {
+        this.tweener
+            .clear()
+            .set({alpha:0})
+            .wait(100)
+            .set({alpha:1})
+            .wait(100)
+            .set({alpha:0})
+            .wait(100)
+            .set({alpha:1})
+            .wait(100)
+            .set({alpha:0})
+            .wait(100)
+            .set({alpha:1})
+            .wait(100)
+            .set({alpha:0})
+            .wait(100)
+            .set({alpha:1})
+            .wait(100);
+    }
+});
+
+
+
+
+tm.define("RankingButton", {
+    superClass: "CircleButton",
+
+    init: function(param) {
+        this.superInit({
+            text: String.fromCharCode(FONT_CODE.trophy),
+            bgColor: "hsl(200, 100%, 50%)",
+        }.$extend(param));
+
+        this.on('push', function() {
+            if (window.gamecenter) {
+                var data = {
+                    leaderboardId: BOARD_ID
+                };
+                gamecenter.showLeaderboard(null, null, data);
+            }
+            else {
+                console.log('show gamecenter');
+            }
+        });
+    },
+});
+
+
+tm.define("AdButton", {
+    superClass: "CircleButton",
+
+    init: function(param) {
+        this.superInit({
+            text: String.fromCharCode(FONT_CODE.buysellads),
+            bgColor: "hsl(0, 100%, 64%)",
+        }.$extend(param));
+
+        this.on('push', this._showAd);
+    },
+
+    _showAd: function() {
+        clickAdCallback = function() {
+            this.flare('aded');
+        }.bind(this);
+
+        showAd();
+    },
+});
+
+tm.define("ShareButton", {
+    superClass: "CircleButton",
+
+    init: function(param) {
+        this.superInit({
+            text: String.fromCharCode(FONT_CODE.comment),
+            bgColor: "hsl(240, 100%, 64%)",
+        }.$extend(param));
+
+        this.message = param.message;
+        this.url = param.url || "http://twitter.com/phi_jp";
+        this.on('push', this._share);
+    },
+
+    _share: function() {
+        var text = this.message;
+
+        if (isNative()) {
+            var message = {
+                text: text + " #FlickArrow #tmlib",
+                activityTypes: ['PostToFacebook'],
+                // activityTypes: ["PostToFacebook", "PostToTwitter", "PostToWeibo", "Message", "Mail", "Print", "CopyToPasteboard", "AssignToContact", "SaveToCameraRoll", "AddToReadingList", "PostToFlickr", "PostToVimeo", "TencentWeibo", "AirDrop"];
+                activityTypes: ["Message", "Mail", "PostToFacebook", "PostToTwitter"],
+                url: this.url,
+            };
+            window.socialmessage.send(message);
+            this.flare('shared');
+        }
+        else {
+            var twitterURL = tm.social.Twitter.createURL({
+                type    : "tweet",
+                text    : text,
+                hashtags: "FlickArrow,tmlib",
+                url     : this.url,
+            });
+            var win = window.open(twitterURL, 'share window', 'width=400, height=300');
+            var timer = setInterval(function() {   
+                if(win.closed) {
+                    this.flare('shared');
+                    clearInterval(timer);  
+                }
+            }.bind(this), 100);
+        }
+
+    },
+});
+
+tm.define("PauseButton", {
+    superClass: "CircleButton",
+
+    init: function(param) {
+        this.superInit({
+            text: String.fromCharCode(FONT_CODE.pause),
+            bgColor: "hsl(0, 0%, 50%)",
+        }.$extend(param));
+    },
+});
+
+tm.define("PlayButton", {
+    superClass: "CircleButton",
+
+    init: function(param) {
+        this.superInit({
+            text: String.fromCharCode(FONT_CODE.play),
+        }.$extend(param));
+    },
+});
+
+tm.define("HomeButton", {
+    superClass: "CircleButton",
+
+    init: function(param) {
+        this.superInit({
+            text: String.fromCharCode(FONT_CODE.home),
+            bgColor: HOME_COLOR,
+        }.$extend(param));
+    },
+});
+
+
+
+tm.define("Life", {
+    superClass: "tm.display.CanvasElement",
+
+    init: function() {
+        this.superInit();
+
+        var data = UserData.get();
+
+        this.backGroup = tm.display.CanvasElement().addChildTo(this);
+        this.frontGroup = tm.display.CanvasElement().addChildTo(this);
+        (5).times(function(i) {
+            var h = tm.display.HeartShape({
+                width: 40,
+                height: 40,
+                fillStyle: "gray",
+            }).addChildTo(this.backGroup);
+            h.x = i*70;
+            h.y = 0;
+        }, this);
+        (5).times(function(i) {
+            var h = tm.display.HeartShape({
+                width: 40,
+                height: 40,
+            }).addChildTo(this.frontGroup);
+            h.x = i*70;
+            h.y = 0;
+
+            h.hide();
+
+            if (data.life>i) {
+                h.show();
+            }
+        }, this);
+    },
+    decriment: function() {
+        var data = UserData.get();
+        data.life--;
+        UserData.set(data);
+
+        var hearts = this.frontGroup.children;
+        hearts[data.life].tweener
+            .clear()
+            .by({
+                y: -100,
+                alpha: -1,
+            }, 200)
+            .call(function() {
+                this.flare('decrimented');
+            }, this)
+            ;
+    },
+
+    recovery: function() {
+        var data = UserData.get();
+        var fronts = this.frontGroup.children;
+
+        (5-data.life).times(function(i) {
+            var h = fronts[data.life+i];
+
+            h.show();
+            h.alpha = 0;
+            h.scale.set(2, 2);
+
+            h.tweener
+                .clear()
+                .wait(i*250)
+                .to({
+                    alpha: 1,
+                    scaleX: 1,
+                    scaleY: 1,
+                }, 500)
+                ;
+        }, this);
+
+        data.life = 5;
+        UserData.set(data);
+    },
+
+});
+
+tm.define("WaveEffect", {
+    superClass: "tm.display.CircleShape",
+
+    init: function() {
+        this.superInit({
+            fillStyle: "white",
+            strokeStyle: "transparent",
+        });
+
+        this.tweener.to({
+            scaleX: 2,
+            scaleY: 2,
+            alpha: 0,
+        }, 250).call(function() {
+            this.remove();
+        }, this);
+
+        tm.asset.Manager.get("sounds/touch").clone().play();
+    }
+});
+
+
+
+
+
 
 tm.define("Enemy", {
     superClass: "tm.display.RoundRectangleShape",
@@ -1449,7 +1912,7 @@ tm.define("TitleScene", {
                 backgroundLayer: {
                     type: "CanvasLayer",
                     init: "#back",
-                    renderInterval: 6,
+                    renderInterval: 60,
                 },
                 bg: {
                     type: "tm.display.RectangleShape",
@@ -1457,7 +1920,7 @@ tm.define("TitleScene", {
                         width: SCREEN_WIDTH,
                         height: SCREEN_HEIGHT,
                         strokeStyle: "transparent",
-                        fillStyle: "white",
+                        fillStyle: "black",
                     },
                     originX: 0,
                     originY: 0,
@@ -1465,23 +1928,77 @@ tm.define("TitleScene", {
                 title: {
                     type: "tm.display.Label",
                     init: ["よけろ！弾幕さん", 40],
-                    fillStyle: "black",
+                    fillStyle: "white",
                     x: SCREEN_WIDTH * 0.5,
-                    y: SCREEN_HEIGHT * (1 / (1 + 1.618)),
-                    interactive: true,
-                    onpointingend: function(e) {
-                        e.app.popScene();
-                    }
+                    y: SCREEN_HEIGHT * 0.2,
                 },
+                life: {
+                    type: "tm.display.CanvasElement"
+                },
+                playButton: {
+                    type: "PlayButton",
+                    init: {
+                        size: 120,
+                    },
+                    x: SCREEN_WIDTH * 0.5,
+                    y: SCREEN_HEIGHT * 0.6,
+                },
+
+                shareButton: {
+                    type: "ShareButton",
+                    init: {
+                        size: 80,
+                        message: TITLE_TWEET,
+                        url: APP_URL,
+                    },
+                    x: SCREEN_WIDTH * 0.25,
+                    y: SCREEN_HEIGHT * 0.8,
+                },
+
+                rankButton: {
+                    type: "RankingButton",
+                    init: {
+                        size: 80,
+                    },
+                    x: SCREEN_WIDTH * 0.5,
+                    y: SCREEN_HEIGHT * 0.85,
+                },
+                adButton: {
+                    type: "AdButton",
+                    init: {
+                        size: 80,
+                    },
+                    x: SCREEN_WIDTH * 0.75,
+                    y: SCREEN_HEIGHT * 0.8,
+                },
+
                 hmdLayer: {
                     type: "CanvasLayer",
                     init: "#hmd",
-                    renderInterval: 6,
+                    renderInterval: 60,
+                    visible: false,
                 },
             }
         });
+
+        var scene = this;
+        this.playButton.onpush = function() {
+            tm.display.RectangleShape({
+                    width: SCREEN_WIDTH,
+                    height: SCREEN_HEIGHT,
+                    fillStyle: "black",
+                    strokeStyle: "transparent",
+                })
+                .setOrigin(0, 0)
+                .setAlpha(0)
+                .addChildTo(scene)
+                .tweener.fadeIn(1000).call(function() {
+                    scene.app.popScene();                    
+                });
+        };
     }
 });
+
 tm.define("GameScene", {
     superClass: "tm.app.Scene",
     init: function() {
@@ -1643,8 +2160,7 @@ tm.define("GameScene", {
                 gameScene.tweener
                     .wait(3000)
                     .call(function() {
-                        gameScene.nextLabel = "title";
-                        gameScene.app.popScene();
+                        gameScene.gameover();
                     });
             }
         });
@@ -1721,11 +2237,8 @@ tm.define("GameScene", {
 
         this.countDown -= 1;
         if (this.countDown <= 0) {
-            this.enemyInterval = Math.max(this.enemyInterval - 1, 40);
+            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_ITERVAL_DECR, 40);
             this.step += 1;
-            if (this.step % 20 === 0) {
-                this.enemyInterval += 10;
-            }
             // var et = this.mt.nextInt(100);
             var et = 50;
             if (et < 50) {
@@ -1745,6 +2258,23 @@ tm.define("GameScene", {
         if (this.player.muteki) {
             this.eraseAllBullets(false);
         }
+    },
+
+    gameover: function() {
+        var gameScene = this;
+
+        tm.display.RectangleShape({
+            width: SCREEN_WIDTH,
+            height: SCREEN_HEIGHT,
+            fillStyle: "black",
+            strokeStyle: "transparent",
+        })
+            .setOrigin(0, 0)
+            .setAlpha(0)
+            .addChildTo(this.hmdLayer)
+            .tweener.fadeIn(1000).call(function() {
+                gameScene.app.popScene();
+            });
     },
 
     addScore: function(score) {
@@ -1955,7 +2485,63 @@ tm.define("GameSceneLayer", {
         });
     }
 });
+tm.define("ResultScene", {
+    superClass: "tm.app.Scene",
+    init: function(param) {
+        this.superInit(param);
+        this.fromJSON({
+            children: {
+                backgroundLayer: {
+                    type: "CanvasLayer",
+                    init: "#back",
+                    renderInterval: 60,
+                    children: {
+                        bd: {
+                            type: "tm.display.RectangleShape",
+                            init: {
+                                width: SCREEN_WIDTH,
+                                height: SCREEN_HEIGHT,
+                                fillStyle: "black",
+                                strokeStyle: "transparent",
+                            },
+                            originX: 0,
+                            originY: 0,
+                        }
+                    }
+                },
+                text: {
+                    type: "tm.display.Label",
+                    init: ["りざると", 50],
+                    x: SCREEN_WIDTH * 0.5,
+                    y: SCREEN_HEIGHT * 0.5,
+                },
+                hmdLayer: {
+                    type: "CanvasLayer",
+                    init: "#hmd",
+                    renderInterval: 60,
+                    visible: false,
+                },
+            }
+        });
+
+        var scene = this;
+        tm.display.RectangleShape({
+            width: SCREEN_WIDTH,
+            height: SCREEN_HEIGHT,
+            fillStyle: "black",
+            strokeStyle: "transparent",
+        })
+            .setOrigin(0, 0)
+            .setAlpha(0)
+            .addChildTo(this)
+            .tweener.fadeIn(1000).call(function() {
+                scene.app.popScene();
+            });
+    }
+});
+
 tm.main(function() {
+
     var app = Application();
     app.run();
 
@@ -1971,6 +2557,8 @@ tm.main(function() {
 tm.define("ManagerScene", {
     superClass: "tm.game.ManagerScene",
     init: function() {
+        tm.display.Label.default.fontFamily = "unifont";
+
         tm.dom.Element("#back").visible = true;
         tm.dom.Element("#hmd").visible = true;
 
@@ -1978,10 +2566,16 @@ tm.define("ManagerScene", {
             startLabel: "title",
             scenes: [{
                 label: "title",
-                className: "TitleScene"
+                className: "TitleScene",
+                nextLabel: "game",
             }, {
                 label: "game",
-                className: "GameScene"
+                className: "GameScene",
+                nextLabel: "result",
+            }, , {
+                label: "result",
+                className: "ResultScene",
+                nextLabel: "title",
             }, ],
         });
     }

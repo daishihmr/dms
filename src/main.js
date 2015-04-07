@@ -1,4 +1,5 @@
 tm.main(function() {
+
     var app = Application();
     app.run();
 
@@ -14,6 +15,8 @@ tm.main(function() {
 tm.define("ManagerScene", {
     superClass: "tm.game.ManagerScene",
     init: function() {
+        tm.display.Label.default.fontFamily = "unifont";
+
         tm.dom.Element("#back").visible = true;
         tm.dom.Element("#hmd").visible = true;
 
@@ -21,10 +24,16 @@ tm.define("ManagerScene", {
             startLabel: "title",
             scenes: [{
                 label: "title",
-                className: "TitleScene"
+                className: "TitleScene",
+                nextLabel: "game",
             }, {
                 label: "game",
-                className: "GameScene"
+                className: "GameScene",
+                nextLabel: "result",
+            }, , {
+                label: "result",
+                className: "ResultScene",
+                nextLabel: "title",
             }, ],
         });
     }

@@ -9,6 +9,7 @@ var srcFiles = [
     "src/danmaku/large.js",
     "src/mt.js",
     "src/elements/background.js",
+    "src/elements/buttons.js",
     "src/elements/enemy.js",
     "src/elements/bullet.js",
     "src/elements/player.js",
@@ -18,6 +19,7 @@ var srcFiles = [
     "src/elements/staritem.js",
     "src/scenes/title.js",
     "src/scenes/game.js",
+    "src/scenes/result.js",
     "src/main.js",
 ];
 

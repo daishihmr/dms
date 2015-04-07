@@ -6,6 +6,7 @@ tm.define("CanvasLayer", {
         this.setOrigin(0, 0);
 
         this.canvas = tm.graphics.Canvas(canvas);
+        this.domElement = tm.dom.Element(canvas);
 
         this.renderer = tm.display.CanvasRenderer(this.canvas);
 
@@ -28,3 +29,12 @@ tm.define("CanvasLayer", {
         }
     }
 });
+
+CanvasLayer.prototype.accessor.visible = {
+    get: function() {
+        return this.domElement.visible;
+    },
+    set: function(v) {
+        this.domElement.visible = v;
+    }
+};
