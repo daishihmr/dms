@@ -14,7 +14,7 @@ tm.define("Shot", {
     update: function() {
         this.y -= SHOT_SPEED;
 
-        if (this.y < -20) {
+        if (this.y < -25) {
             this.remove();
         }
     }

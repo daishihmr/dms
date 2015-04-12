@@ -16,7 +16,6 @@ tm.define("Enemy", {
 
         this.hp = ENEMY_SMALL_HP;
         this.erasing = false;
-        this.starCount = 0;
 
         this.entered = false;
         this.on("enterframe", function() {
@@ -42,9 +41,11 @@ tm.define("Enemy", {
             return;
         }
 
-        this.runner.x = this.x;
-        this.runner.y = this.y;
-        this.runner.update();
+        if (this.y < Danmaku.param.target.y) {
+            this.runner.x = this.x;
+            this.runner.y = this.y;
+            this.runner.update();
+        }
     }
 });
 
@@ -60,7 +61,6 @@ tm.define("SmallEnemy0", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
-        this.starCount = 1;
 
         this.tweener
             .by({
@@ -80,7 +80,6 @@ tm.define("SmallEnemy1", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
-        this.starCount = 1;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -101,7 +100,6 @@ tm.define("SmallEnemy2", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
-        this.starCount = 1;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -122,8 +120,7 @@ tm.define("MiddleEnemy0", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = true;
-        this.starCount = 5;
+        this.erasing = false;
 
         this.tweener
             .to({
@@ -143,8 +140,7 @@ tm.define("MiddleEnemy1", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = true;
-        this.starCount = 5;
+        this.erasing = false;
 
         this.tweener
             .to({
@@ -165,7 +161,6 @@ tm.define("LargeEnemy0", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
-        this.starCount = 10;
 
         this.tweener
             .to({
@@ -186,7 +181,6 @@ tm.define("LargeEnemy1", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
-        this.starCount = 10;
 
         this.one("enterframe", function() {
             this.tweener
@@ -209,7 +203,6 @@ tm.define("LargeEnemy2", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
-        this.starCount = 10;
 
         this.one("enterframe", function() {
             this.tweener

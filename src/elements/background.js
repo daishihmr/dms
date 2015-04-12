@@ -16,6 +16,7 @@ tm.define("Background", {
         this.clipping = true;
         this.setSize(W, H);
         this.setOrigin(0, 0);
+        this.age = 0;
 
         this.stars = Array.range(20).map(function() {
             var size = Math.rand(50, 150);
@@ -43,7 +44,8 @@ tm.define("Background", {
         }.bind(this));
     },
     update: function(app) {
-        this.color = Math.floor((app.frame / 30) % 360);
+        this.color = Math.floor((this.age / 30) % 360);
+        this.age += 1;
     },
     draw: function(canvas) {
         canvas
@@ -51,7 +53,7 @@ tm.define("Background", {
                 tm.graphics.RadialGradient(W * 0.5, H * 0.05, 0, W * 0.5, H * 0.05, H)
                     .addColorStopList([
                         { offset: 0.0, color: "hsla({0}, 30%, 10%, 1.0)".format(this.color || 0) },
-                        { offset: 1.0, color: "hsla({0}, 30%, 10%, 1.0)".format((this.color || 0) - 30) },
+                        { offset: 1.0, color: "hsla({0}, 30%, 10%, 1.0)".format((this.color || 0) - 50) },
                     ])
                     .toStyle()
             )

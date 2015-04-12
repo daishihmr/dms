@@ -120,6 +120,7 @@ tm.define("CircleButton", {
             .wait(100)
             .set({alpha:1})
             .wait(100);
+        return this;
     }
 });
 
@@ -207,10 +208,10 @@ tm.define("ShareButton", {
                 url     : this.url,
             });
             var win = window.open(twitterURL, 'share window', 'width=400, height=300');
-            var timer = setInterval(function() {   
+            var timer = setInterval(function() {
                 if(win.closed) {
                     this.flare('shared');
-                    clearInterval(timer);  
+                    clearInterval(timer);
                 }
             }.bind(this), 100);
         }

@@ -15,15 +15,15 @@ tm.define("TitleScene", {
                         width: SCREEN_WIDTH,
                         height: SCREEN_HEIGHT,
                         strokeStyle: "transparent",
-                        fillStyle: "black",
+                        fillStyle: "white",
                     },
                     originX: 0,
                     originY: 0,
                 },
                 title: {
                     type: "tm.display.Label",
-                    init: ["よけろ！弾幕さん", 40],
-                    fillStyle: "white",
+                    init: ["よけろ！弾幕さん", 60],
+                    fillStyle: "#333",
                     x: SCREEN_WIDTH * 0.5,
                     y: SCREEN_HEIGHT * 0.2,
                 },
@@ -37,6 +37,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.5,
                     y: SCREEN_HEIGHT * 0.6,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
 
                 shareButton: {
@@ -48,6 +52,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.25,
                     y: SCREEN_HEIGHT * 0.8,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
 
                 rankButton: {
@@ -57,6 +65,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.5,
                     y: SCREEN_HEIGHT * 0.85,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
                 adButton: {
                     type: "AdButton",
@@ -65,6 +77,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.75,
                     y: SCREEN_HEIGHT * 0.8,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
 
                 hmdLayer: {
@@ -77,7 +93,9 @@ tm.define("TitleScene", {
         });
 
         var scene = this;
+
         this.playButton.onpush = function() {
+            this.setInteractive(false).blink();
             tm.display.RectangleShape({
                     width: SCREEN_WIDTH,
                     height: SCREEN_HEIGHT,
@@ -88,8 +106,8 @@ tm.define("TitleScene", {
                 .setAlpha(0)
                 .addChildTo(scene)
                 .tweener.fadeIn(1000).call(function() {
-                    scene.app.popScene();                    
+                    scene.app.popScene();
                 });
         };
-    }
+    },
 });

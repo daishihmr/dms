@@ -24,6 +24,7 @@ var FONT_CODE = {
 var ASSETS = {
     "unifont": "assets/unip.ttf",
     "bullet": "assets/bullets.png",
+    "bullet_erase": "assets/bullets_erase.png",
     "sound/bgm": "assets/nc91440.mp3",
     "sound/miss": "assets/sei_ge_garasu_kudake02.mp3",
     "sound/exp1": "assets/sei_ge_wareru01.mp3",
@@ -52,7 +53,7 @@ var SHOT_SPEED = 30;
 var BULLET_POOL_SIZE = 256;
 var BULLET_BOUNDING_RADIUS = 4;
 
-var MT_SEED = 54321;
+var MT_SEED = 10;
 
 var ENEMY_SMALL_HP = 2;
 var ENEMY_MIDDLE_HP = 10;

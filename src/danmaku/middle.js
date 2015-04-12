@@ -102,7 +102,7 @@
             repeat(999, [
                 fire(IVS),
                 repeat(10, [
-                    fire(direction(0, "sequence"), speed(12), BCL),
+                    fire(direction(0, "sequence"), speed(12), BL),
                     wait(3),
                 ]),
                 wait(100),
@@ -110,5 +110,5 @@
         ]),
     }));
 
-    Danmaku.middle = [Danmaku.middle.last];
+    // Danmaku.middle = [Danmaku.middle.last];
 })();

@@ -14,6 +14,18 @@ tm.define("GameScene", {
                         background: {
                             type: "Background"
                         },
+                        space: {
+                            type: "tm.display.RectangleShape",
+                            init: {
+                                width: SCREEN_WIDTH,
+                                height: SCREEN_HEIGHT - H,
+                                strokeStyle: "transparent",
+                                fillStyle: "hsl(220, 30%, 50%)"
+                            },
+                            originX: 0,
+                            originY: 0,
+                            y: H
+                        }
                     }
                 },
                 enemyLayer: {
@@ -164,32 +176,30 @@ tm.define("GameScene", {
             }
         });
 
-        Danmaku.param = {
-            target: this.player,
-            createNewBullet: function(runner, spec) {
-                var bullet = gameScene.bulletPool.get(spec.type, runner);
-                if (bullet == null) {
-                    return;
-                }
-                gameScene.bullets.push(bullet);
-                bullet.onremoved = function() {
-                    gameScene.bullets.erase(this);
-                    if (this.itemize) {
-                        var star = gameScene.starPool.get();
-                        if (star !== null) {
-                            star
-                                .setPosition(this.x, this.y)
-                                .addChildTo(gameScene.backgroundLayer.background.fg);
-                            star.flying = false;
-                            gameScene.stars.push(star);
-                        }
+        Danmaku.param.target = this.player;
+        Danmaku.param.createNewBullet = function(runner, spec) {
+            var bullet = gameScene.bulletPool.get(spec.type, runner);
+            if (bullet == null) {
+                return;
+            }
+            gameScene.bullets.push(bullet);
+            bullet.onremoved = function() {
+                gameScene.bullets.erase(this);
+                if (this.itemize) {
+                    var star = gameScene.starPool.get();
+                    if (star !== null) {
+                        star
+                            .setPosition(this.x, this.y)
+                            .addChildTo(gameScene.backgroundLayer.background.fg);
+                        star.flying = false;
+                        gameScene.stars.push(star);
                     }
-                };
-                bullet.addChildTo(gameScene.bulletLayer);
-            },
+                }
+            };
+            bullet.addChildTo(gameScene.bulletLayer);
         };
 
-        this.mt = new MersenneTwister(MT_SEED);
+        this.mt = new MersenneTwister(Math.rand(1, MT_SEED));
         this.mt.range = function(f, t) {
             return f + this.nextInt(t - f);
         };
@@ -238,8 +248,7 @@ tm.define("GameScene", {
         if (this.countDown <= 0) {
             this.enemyInterval = Math.max(this.enemyInterval - ENEMY_ITERVAL_DECR, 40);
             this.step += 1;
-            // var et = this.mt.nextInt(100);
-            var et = 50;
+            var et = this.mt.nextInt(100);
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;
@@ -252,7 +261,11 @@ tm.define("GameScene", {
             }
         }
 
-        this.weight = Math.max(1 - this.bullets.length / 800, 0.1);
+        if (this.bullets.length > 200) {
+            this.weight = Math.max(1 - (this.bullets.length - 200) / 800, 0.1);
+        } else {
+            this.weight = 1.0;
+        }
 
         if (this.player.muteki) {
             this.eraseAllBullets(false);
@@ -271,7 +284,7 @@ tm.define("GameScene", {
             .setOrigin(0, 0)
             .setAlpha(0)
             .addChildTo(this.hmdLayer)
-            .tweener.fadeIn(1000).call(function() {
+            .tweener.fadeIn(3000).call(function() {
                 gameScene.app.popScene();
             });
     },

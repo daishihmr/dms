@@ -103,6 +103,7 @@ var FONT_CODE = {
 var ASSETS = {
     "unifont": "assets/unip.ttf",
     "bullet": "assets/bullets.png",
+    "bullet_erase": "assets/bullets_erase.png",
     "sound/bgm": "assets/nc91440.mp3",
     "sound/miss": "assets/sei_ge_garasu_kudake02.mp3",
     "sound/exp1": "assets/sei_ge_wareru01.mp3",
@@ -131,7 +132,7 @@ var SHOT_SPEED = 30;
 var BULLET_POOL_SIZE = 256;
 var BULLET_BOUNDING_RADIUS = 4;
 
-var MT_SEED = 54321;
+var MT_SEED = 10;
 
 var ENEMY_SMALL_HP = 2;
 var ENEMY_MIDDLE_HP = 10;
@@ -209,7 +210,9 @@ var UserData = {
 })();
 
 var Danmaku = {};
-Danmaku.param = null;
+Danmaku.param = {
+    speedRate: 1
+};
 Danmaku.small = [];
 Danmaku.middle = [];
 Danmaku.large = [];
@@ -488,7 +491,7 @@ Danmaku.large = [];
             repeat(999, [
                 fire(IVS),
                 repeat(10, [
-                    fire(direction(0, "sequence"), speed(12), BCL),
+                    fire(direction(0, "sequence"), speed(12), BL),
                     wait(3),
                 ]),
                 wait(100),
@@ -496,7 +499,7 @@ Danmaku.large = [];
         ]),
     }));
 
-    Danmaku.middle = [Danmaku.middle.last];
+    // Danmaku.middle = [Danmaku.middle.last];
 })();
 
 (function() {
@@ -798,6 +801,7 @@ tm.define("Background", {
         this.clipping = true;
         this.setSize(W, H);
         this.setOrigin(0, 0);
+        this.age = 0;
 
         this.stars = Array.range(20).map(function() {
             var size = Math.rand(50, 150);
@@ -825,7 +829,8 @@ tm.define("Background", {
         }.bind(this));
     },
     update: function(app) {
-        this.color = Math.floor((app.frame / 30) % 360);
+        this.color = Math.floor((this.age / 30) % 360);
+        this.age += 1;
     },
     draw: function(canvas) {
         canvas
@@ -833,7 +838,7 @@ tm.define("Background", {
                 tm.graphics.RadialGradient(W * 0.5, H * 0.05, 0, W * 0.5, H * 0.05, H)
                     .addColorStopList([
                         { offset: 0.0, color: "hsla({0}, 30%, 10%, 1.0)".format(this.color || 0) },
-                        { offset: 1.0, color: "hsla({0}, 30%, 10%, 1.0)".format((this.color || 0) - 30) },
+                        { offset: 1.0, color: "hsla({0}, 30%, 10%, 1.0)".format((this.color || 0) - 50) },
                     ])
                     .toStyle()
             )
@@ -963,6 +968,7 @@ tm.define("CircleButton", {
             .wait(100)
             .set({alpha:1})
             .wait(100);
+        return this;
     }
 });
 
@@ -1050,10 +1056,10 @@ tm.define("ShareButton", {
                 url     : this.url,
             });
             var win = window.open(twitterURL, 'share window', 'width=400, height=300');
-            var timer = setInterval(function() {   
+            var timer = setInterval(function() {
                 if(win.closed) {
                     this.flare('shared');
-                    clearInterval(timer);  
+                    clearInterval(timer);
                 }
             }.bind(this), 100);
         }
@@ -1219,7 +1225,6 @@ tm.define("Enemy", {
 
         this.hp = ENEMY_SMALL_HP;
         this.erasing = false;
-        this.starCount = 0;
 
         this.entered = false;
         this.on("enterframe", function() {
@@ -1245,9 +1250,11 @@ tm.define("Enemy", {
             return;
         }
 
-        this.runner.x = this.x;
-        this.runner.y = this.y;
-        this.runner.update();
+        if (this.y < Danmaku.param.target.y) {
+            this.runner.x = this.x;
+            this.runner.y = this.y;
+            this.runner.update();
+        }
     }
 });
 
@@ -1263,7 +1270,6 @@ tm.define("SmallEnemy0", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
-        this.starCount = 1;
 
         this.tweener
             .by({
@@ -1283,7 +1289,6 @@ tm.define("SmallEnemy1", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
-        this.starCount = 1;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -1304,7 +1309,6 @@ tm.define("SmallEnemy2", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
-        this.starCount = 1;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -1325,8 +1329,7 @@ tm.define("MiddleEnemy0", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = true;
-        this.starCount = 5;
+        this.erasing = false;
 
         this.tweener
             .to({
@@ -1346,8 +1349,7 @@ tm.define("MiddleEnemy1", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = true;
-        this.starCount = 5;
+        this.erasing = false;
 
         this.tweener
             .to({
@@ -1368,7 +1370,6 @@ tm.define("LargeEnemy0", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
-        this.starCount = 10;
 
         this.tweener
             .to({
@@ -1389,7 +1390,6 @@ tm.define("LargeEnemy1", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
-        this.starCount = 10;
 
         this.one("enterframe", function() {
             this.tweener
@@ -1412,7 +1412,6 @@ tm.define("LargeEnemy2", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
-        this.starCount = 10;
 
         this.one("enterframe", function() {
             this.tweener
@@ -1428,10 +1427,11 @@ tm.define("LargeEnemy2", {
 });
 tm.define("Bullet", {
     superClass: "tm.display.Sprite",
-    init: function(size, frameIndex) {
+    init: function(size, frameIndex, eraseFrameIndex) {
         this.superInit("bullet", 64, 64);
         this.baseFrameIndex = this.frameIndex = frameIndex;
         // this.frameIndex = frameIndex + 3;
+        this.eraseFrameIndex = eraseFrameIndex;
 
         this.boundingType = "circle";
         this.checkHierarchy = false;
@@ -1458,31 +1458,33 @@ tm.define("Bullet", {
         this.position.setObject(this.runner);
 
         this.age += 1;
-        var f = this.age % 8;
-        if (f > 4) f = 8 - f;
-        this.frameIndex = this.baseFrameIndex + 2 + f;
+        if (!this.erasing) {
+            // var f = this.age % 8;
+            var f = app.frame % 8;
+            if (f > 4) f = 8 - f;
+            this.frameIndex = this.baseFrameIndex + 2 + f;
+        }
 
         if (!this.isInScreen()) {
-            this.remove();
+            if (this.parent) this.remove();
         }
     },
     erase: function(itemize) {
         if (!this.erasing && this.visible) {
             this.itemize = itemize;
-            this.blendMode = "lighter";
-            this.tweener
-                .clear()
-                .to({
-                    scaleX: 1 * 1.5,
-                    scaleY: 1 * 1.5,
-                    alpha: 0
-                }, 120)
-                .call(function() {
-                    if (this.parent) this.remove();
-                }.bind(this));
+            this.image = tm.asset.Manager.get("bullet_erase");
+            this.frameIndex = this.eraseFrameIndex;
             this.erasing = true;
+            this.on("enterframe", function() {
+                if (this.age % 2 === 0) {
+                    this.frameIndex += 1;
+                }
+                if (this.frameIndex >= this.eraseFrameIndex + 8) {
+                    if (this.parent) this.remove();
+                }
+            });
         } else if (!this.visible) {
-            this.remove();
+            if (this.parent) this.remove();
         }
     },
     isInScreen: function() {
@@ -1505,39 +1507,39 @@ tm.define("BulletPool", {
         (BULLET_POOL_SIZE).times(function() {
             var b;
 
-            b = Bullet(20, 16);
+            b = Bullet(20, 16, 0);
             b.pool = this.redSmall;
             this.redSmall.push(b);
 
-            b = Bullet(20, 24);
+            b = Bullet(20, 24, 8);
             b.pool = this.blueSmall;
             this.blueSmall.push(b);
 
-            b = Bullet(30, 0);
+            b = Bullet(30, 0, 0);
             b.pool = this.redLarge;
             this.redLarge.push(b);
 
-            b = Bullet(30, 8);
+            b = Bullet(30, 8, 8);
             b.pool = this.blueLarge;
             this.blueLarge.push(b);
 
-            b = Bullet(20, 48);
+            b = Bullet(20, 48, 0);
             b.pool = this.redSmallCircle;
             this.redSmallCircle.push(b);
 
-            b = Bullet(20, 56);
+            b = Bullet(20, 56, 8);
             b.pool = this.blueSmallCircle;
             this.blueSmallCircle.push(b);
 
-            b = Bullet(30, 32);
+            b = Bullet(30, 32, 0);
             b.pool = this.redLargeCircle;
             this.redLargeCircle.push(b);
 
-            b = Bullet(30, 40);
+            b = Bullet(30, 40, 8);
             b.pool = this.blueLargeCircle;
             this.blueLargeCircle.push(b);
 
-            b = Bullet(30, 0);
+            b = Bullet(30, 0, 0);
             b.pool = this.invisible;
             b.visible = false;
             this.invisible.push(b);
@@ -1559,12 +1561,17 @@ tm.define("BulletPool", {
     get: function(type, runner) {
         var bullet = this.pools[type].shift();
         if (bullet !== undefined) {
+            bullet.clearEventListener("enterframe");
+            bullet.image = tm.asset.Manager.get("bullet");
+            bullet.frameIndex = bullet.baseFrameIndex;
             bullet.erasing = false;
             bullet.runner = runner;
             bullet.position.setObject(runner);
             bullet.itemize = false;
             bullet.age = 0;
-            bullet.setScale(1).setAlpha(1).setBlendMode("source-over");
+            runner.onVanish = function() {
+                if (bullet.parent) bullet.remove();
+            };
             return bullet;
         } else {
             console.warn("弾が足りないニャ");
@@ -1741,7 +1748,7 @@ tm.define("Shot", {
     update: function() {
         this.y -= SHOT_SPEED;
 
-        if (this.y < -20) {
+        if (this.y < -25) {
             this.remove();
         }
     }
@@ -1920,15 +1927,15 @@ tm.define("TitleScene", {
                         width: SCREEN_WIDTH,
                         height: SCREEN_HEIGHT,
                         strokeStyle: "transparent",
-                        fillStyle: "black",
+                        fillStyle: "white",
                     },
                     originX: 0,
                     originY: 0,
                 },
                 title: {
                     type: "tm.display.Label",
-                    init: ["よけろ！弾幕さん", 40],
-                    fillStyle: "white",
+                    init: ["よけろ！弾幕さん", 60],
+                    fillStyle: "#333",
                     x: SCREEN_WIDTH * 0.5,
                     y: SCREEN_HEIGHT * 0.2,
                 },
@@ -1942,6 +1949,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.5,
                     y: SCREEN_HEIGHT * 0.6,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
 
                 shareButton: {
@@ -1953,6 +1964,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.25,
                     y: SCREEN_HEIGHT * 0.8,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
 
                 rankButton: {
@@ -1962,6 +1977,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.5,
                     y: SCREEN_HEIGHT * 0.85,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
                 adButton: {
                     type: "AdButton",
@@ -1970,6 +1989,10 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.75,
                     y: SCREEN_HEIGHT * 0.8,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
                 },
 
                 hmdLayer: {
@@ -1982,7 +2005,9 @@ tm.define("TitleScene", {
         });
 
         var scene = this;
+
         this.playButton.onpush = function() {
+            this.setInteractive(false).blink();
             tm.display.RectangleShape({
                     width: SCREEN_WIDTH,
                     height: SCREEN_HEIGHT,
@@ -1993,10 +2018,10 @@ tm.define("TitleScene", {
                 .setAlpha(0)
                 .addChildTo(scene)
                 .tweener.fadeIn(1000).call(function() {
-                    scene.app.popScene();                    
+                    scene.app.popScene();
                 });
         };
-    }
+    },
 });
 
 tm.define("GameScene", {
@@ -2015,6 +2040,18 @@ tm.define("GameScene", {
                         background: {
                             type: "Background"
                         },
+                        space: {
+                            type: "tm.display.RectangleShape",
+                            init: {
+                                width: SCREEN_WIDTH,
+                                height: SCREEN_HEIGHT - H,
+                                strokeStyle: "transparent",
+                                fillStyle: "hsl(220, 30%, 50%)"
+                            },
+                            originX: 0,
+                            originY: 0,
+                            y: H
+                        }
                     }
                 },
                 enemyLayer: {
@@ -2165,32 +2202,30 @@ tm.define("GameScene", {
             }
         });
 
-        Danmaku.param = {
-            target: this.player,
-            createNewBullet: function(runner, spec) {
-                var bullet = gameScene.bulletPool.get(spec.type, runner);
-                if (bullet == null) {
-                    return;
-                }
-                gameScene.bullets.push(bullet);
-                bullet.onremoved = function() {
-                    gameScene.bullets.erase(this);
-                    if (this.itemize) {
-                        var star = gameScene.starPool.get();
-                        if (star !== null) {
-                            star
-                                .setPosition(this.x, this.y)
-                                .addChildTo(gameScene.backgroundLayer.background.fg);
-                            star.flying = false;
-                            gameScene.stars.push(star);
-                        }
+        Danmaku.param.target = this.player;
+        Danmaku.param.createNewBullet = function(runner, spec) {
+            var bullet = gameScene.bulletPool.get(spec.type, runner);
+            if (bullet == null) {
+                return;
+            }
+            gameScene.bullets.push(bullet);
+            bullet.onremoved = function() {
+                gameScene.bullets.erase(this);
+                if (this.itemize) {
+                    var star = gameScene.starPool.get();
+                    if (star !== null) {
+                        star
+                            .setPosition(this.x, this.y)
+                            .addChildTo(gameScene.backgroundLayer.background.fg);
+                        star.flying = false;
+                        gameScene.stars.push(star);
                     }
-                };
-                bullet.addChildTo(gameScene.bulletLayer);
-            },
+                }
+            };
+            bullet.addChildTo(gameScene.bulletLayer);
         };
 
-        this.mt = new MersenneTwister(MT_SEED);
+        this.mt = new MersenneTwister(Math.rand(1, MT_SEED));
         this.mt.range = function(f, t) {
             return f + this.nextInt(t - f);
         };
@@ -2239,8 +2274,7 @@ tm.define("GameScene", {
         if (this.countDown <= 0) {
             this.enemyInterval = Math.max(this.enemyInterval - ENEMY_ITERVAL_DECR, 40);
             this.step += 1;
-            // var et = this.mt.nextInt(100);
-            var et = 50;
+            var et = this.mt.nextInt(100);
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;
@@ -2253,7 +2287,11 @@ tm.define("GameScene", {
             }
         }
 
-        this.weight = Math.max(1 - this.bullets.length / 800, 0.1);
+        if (this.bullets.length > 200) {
+            this.weight = Math.max(1 - (this.bullets.length - 200) / 800, 0.1);
+        } else {
+            this.weight = 1.0;
+        }
 
         if (this.player.muteki) {
             this.eraseAllBullets(false);
@@ -2272,7 +2310,7 @@ tm.define("GameScene", {
             .setOrigin(0, 0)
             .setAlpha(0)
             .addChildTo(this.hmdLayer)
-            .tweener.fadeIn(1000).call(function() {
+            .tweener.fadeIn(3000).call(function() {
                 gameScene.app.popScene();
             });
     },

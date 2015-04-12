@@ -1,9 +1,10 @@
 tm.define("Bullet", {
     superClass: "tm.display.Sprite",
-    init: function(size, frameIndex) {
+    init: function(size, frameIndex, eraseFrameIndex) {
         this.superInit("bullet", 64, 64);
         this.baseFrameIndex = this.frameIndex = frameIndex;
         // this.frameIndex = frameIndex + 3;
+        this.eraseFrameIndex = eraseFrameIndex;
 
         this.boundingType = "circle";
         this.checkHierarchy = false;
@@ -30,31 +31,33 @@ tm.define("Bullet", {
         this.position.setObject(this.runner);
 
         this.age += 1;
-        var f = this.age % 8;
-        if (f > 4) f = 8 - f;
-        this.frameIndex = this.baseFrameIndex + 2 + f;
+        if (!this.erasing) {
+            // var f = this.age % 8;
+            var f = app.frame % 8;
+            if (f > 4) f = 8 - f;
+            this.frameIndex = this.baseFrameIndex + 2 + f;
+        }
 
         if (!this.isInScreen()) {
-            this.remove();
+            if (this.parent) this.remove();
         }
     },
     erase: function(itemize) {
         if (!this.erasing && this.visible) {
             this.itemize = itemize;
-            this.blendMode = "lighter";
-            this.tweener
-                .clear()
-                .to({
-                    scaleX: 1 * 1.5,
-                    scaleY: 1 * 1.5,
-                    alpha: 0
-                }, 120)
-                .call(function() {
-                    if (this.parent) this.remove();
-                }.bind(this));
+            this.image = tm.asset.Manager.get("bullet_erase");
+            this.frameIndex = this.eraseFrameIndex;
             this.erasing = true;
+            this.on("enterframe", function() {
+                if (this.age % 2 === 0) {
+                    this.frameIndex += 1;
+                }
+                if (this.frameIndex >= this.eraseFrameIndex + 8) {
+                    if (this.parent) this.remove();
+                }
+            });
         } else if (!this.visible) {
-            this.remove();
+            if (this.parent) this.remove();
         }
     },
     isInScreen: function() {
@@ -77,39 +80,39 @@ tm.define("BulletPool", {
         (BULLET_POOL_SIZE).times(function() {
             var b;
 
-            b = Bullet(20, 16);
+            b = Bullet(20, 16, 0);
             b.pool = this.redSmall;
             this.redSmall.push(b);
 
-            b = Bullet(20, 24);
+            b = Bullet(20, 24, 8);
             b.pool = this.blueSmall;
             this.blueSmall.push(b);
 
-            b = Bullet(30, 0);
+            b = Bullet(30, 0, 0);
             b.pool = this.redLarge;
             this.redLarge.push(b);
 
-            b = Bullet(30, 8);
+            b = Bullet(30, 8, 8);
             b.pool = this.blueLarge;
             this.blueLarge.push(b);
 
-            b = Bullet(20, 48);
+            b = Bullet(20, 48, 0);
             b.pool = this.redSmallCircle;
             this.redSmallCircle.push(b);
 
-            b = Bullet(20, 56);
+            b = Bullet(20, 56, 8);
             b.pool = this.blueSmallCircle;
             this.blueSmallCircle.push(b);
 
-            b = Bullet(30, 32);
+            b = Bullet(30, 32, 0);
             b.pool = this.redLargeCircle;
             this.redLargeCircle.push(b);
 
-            b = Bullet(30, 40);
+            b = Bullet(30, 40, 8);
             b.pool = this.blueLargeCircle;
             this.blueLargeCircle.push(b);
 
-            b = Bullet(30, 0);
+            b = Bullet(30, 0, 0);
             b.pool = this.invisible;
             b.visible = false;
             this.invisible.push(b);
@@ -131,12 +134,17 @@ tm.define("BulletPool", {
     get: function(type, runner) {
         var bullet = this.pools[type].shift();
         if (bullet !== undefined) {
+            bullet.clearEventListener("enterframe");
+            bullet.image = tm.asset.Manager.get("bullet");
+            bullet.frameIndex = bullet.baseFrameIndex;
             bullet.erasing = false;
             bullet.runner = runner;
             bullet.position.setObject(runner);
             bullet.itemize = false;
             bullet.age = 0;
-            bullet.setScale(1).setAlpha(1).setBlendMode("source-over");
+            runner.onVanish = function() {
+                if (bullet.parent) bullet.remove();
+            };
             return bullet;
         } else {
             console.warn("弾が足りないニャ");
