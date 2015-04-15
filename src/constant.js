@@ -61,7 +61,7 @@ var ENEMY_LARGE_HP = 50;
 
 var EXTEND_SCORE = 100000;
 
-var ENEMY_ITERVAL_DECR = 3;
+var ENEMY_INTERVAL_DECR = 1;
 
 var isNative = function() {
     return window.cordovaFlag === true;

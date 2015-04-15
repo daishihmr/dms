@@ -16,6 +16,8 @@ tm.define("ManagerScene", {
     superClass: "tm.game.ManagerScene",
     init: function() {
         tm.display.Label.default.fontFamily = "unifont";
+        tm.sound.SoundManager.volume = 0.2;
+        tm.sound.SoundManager.musicVolume = 0.2;
 
         tm.dom.Element("#back").visible = true;
         tm.dom.Element("#hmd").visible = true;

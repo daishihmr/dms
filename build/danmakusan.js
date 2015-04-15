@@ -140,7 +140,7 @@ var ENEMY_LARGE_HP = 50;
 
 var EXTEND_SCORE = 100000;
 
-var ENEMY_ITERVAL_DECR = 3;
+var ENEMY_INTERVAL_DECR = 1;
 
 var isNative = function() {
     return window.cordovaFlag === true;
@@ -499,7 +499,107 @@ Danmaku.large = [];
         ]),
     }));
 
-    // Danmaku.middle = [Danmaku.middle.last];
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(100),
+                fire(speed(8), IVS),
+                repeat(10, [
+                    fire(direction(20 * -2), speed(0.6, "sequence"), IVS),
+                    repeat(3, [
+                        fire(direction(20, "sequence"), speed(0, "sequence"), RS),
+                    ]),
+                    wait(3),
+                ]),
+            ]),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(60),
+                repeat(20, [
+                    fire(direction(10, "sequence"), IVS),
+                    repeat(4, [
+                        fire(direction(90, "sequence"), speed(20), IVS(actionRef("bit"))),
+                    ]),
+                    wait(20),
+                ]),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(speed(4), IVS),
+            repeat(3, [
+                fire(direction(90, "relative"), speed(0.8, "sequence"), RCL),
+            ]),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(60),
+                repeat(20, [
+                    fire(direction(-10, "sequence"), IVS),
+                    repeat(4, [
+                        fire(direction(90, "sequence"), speed(20), IVS(actionRef("bit"))),
+                    ]),
+                    wait(20),
+                ]),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(speed(4), IVS),
+            repeat(3, [
+                fire(direction(90, "relative"), speed(0.8, "sequence"), BCL),
+            ]),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(60),
+                repeat(18, [
+                    fire(direction(20, "sequence"), speed(2), BCS(actionRef("seed"))),
+                ]),
+            ]),
+        ]),
+        seed: action([
+            wait(20),
+            changeSpeed(speed(0), 20),
+            wait(20),
+            fire(speed(7), RCS),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(120),
+                repeat(10, [
+                    fire(direction(6, "sequence"), IVS),
+                    repeat(8, [
+                        fire(direction(360 / 8, "sequence"), speed(20), IVS(actionRef("bit"))),
+                    ]),
+                    wait(7),
+                ]),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(direction(-90, "relative"), speed(5), BCL),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle = [Danmaku.middle.last];
 })();
 
 (function() {
@@ -1225,6 +1325,8 @@ tm.define("Enemy", {
 
         this.hp = ENEMY_SMALL_HP;
         this.erasing = false;
+        this.starCount = 0;
+        this.fireToBack = true;
 
         this.entered = false;
         this.on("enterframe", function() {
@@ -1250,7 +1352,7 @@ tm.define("Enemy", {
             return;
         }
 
-        if (this.y < Danmaku.param.target.y) {
+        if (this.fireToBack || this.y < Danmaku.param.target.y) {
             this.runner.x = this.x;
             this.runner.y = this.y;
             this.runner.update();
@@ -1270,6 +1372,8 @@ tm.define("SmallEnemy0", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
+        this.starCount = 1;
+        this.fireToBack = false;
 
         this.tweener
             .by({
@@ -1289,6 +1393,8 @@ tm.define("SmallEnemy1", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
+        this.starCount = 1;
+        this.fireToBack = false;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -1309,6 +1415,8 @@ tm.define("SmallEnemy2", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
+        this.starCount = 1;
+        this.fireToBack = false;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -1325,40 +1433,46 @@ tm.define("SmallEnemy2", {
 tm.define("MiddleEnemy0", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(100, 120);
+        this.superInit(100, 10);
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = false;
+        this.erasing = true;
+        this.starCount = 5;
 
         this.tweener
             .to({
                 y: 120
-            }, 1200, "easeOutQuad");
-
-        this.on("enterframe", function() {
-            this.y += 2;
-        });
+            }, 1200, "easeOutQuad")
+            .wait(3000)
+            .call(function() {
+                this.on("enterframe", function() {
+                    this.y += 1;
+                });
+            }.bind(this));
     }
 });
 
 tm.define("MiddleEnemy1", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(100, 120);
+        this.superInit(100, 130);
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
         this.erasing = false;
+        this.starCount = 5;
 
         this.tweener
             .to({
                 y: 120
-            }, 1200, "easeOutQuad");
-
-        this.on("enterframe", function() {
-            this.y += 2;
-        });
+            }, 1200, "easeOutQuad")
+            .wait(3000)
+            .call(function() {
+                this.on("enterframe", function() {
+                    this.y += 1;
+                });
+            }.bind(this));
     }
 });
 
@@ -1370,6 +1484,7 @@ tm.define("LargeEnemy0", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
+        this.starCount = 20;
 
         this.tweener
             .to({
@@ -1390,6 +1505,7 @@ tm.define("LargeEnemy1", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
+        this.starCount = 20;
 
         this.one("enterframe", function() {
             this.tweener
@@ -1412,6 +1528,7 @@ tm.define("LargeEnemy2", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
+        this.starCount = 20;
 
         this.one("enterframe", function() {
             this.tweener
@@ -2272,18 +2389,19 @@ tm.define("GameScene", {
 
         this.countDown -= 1;
         if (this.countDown <= 0) {
-            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_ITERVAL_DECR, 40);
+            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_INTERVAL_DECR, 40);
             this.step += 1;
-            var et = this.mt.nextInt(100);
+            // var et = this.mt.nextInt(100);
+            var et = 50;
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;
             } else if (et < 80) {
                 this._launchMiddle();
-                this.countDown = this.enemyInterval * 1.4;
+                this.countDown = this.enemyInterval * 2.0;
             } else {
                 this._launchLarge();
-                this.countDown = this.enemyInterval * 1.8;
+                this.countDown = this.enemyInterval * 4.0;
             }
         }
 
@@ -2596,6 +2714,8 @@ tm.define("ManagerScene", {
     superClass: "tm.game.ManagerScene",
     init: function() {
         tm.display.Label.default.fontFamily = "unifont";
+        tm.sound.SoundManager.volume = 0.2;
+        tm.sound.SoundManager.musicVolume = 0.2;
 
         tm.dom.Element("#back").visible = true;
         tm.dom.Element("#hmd").visible = true;

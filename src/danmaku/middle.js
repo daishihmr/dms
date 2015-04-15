@@ -110,5 +110,105 @@
         ]),
     }));
 
-    // Danmaku.middle = [Danmaku.middle.last];
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(100),
+                fire(speed(8), IVS),
+                repeat(10, [
+                    fire(direction(20 * -2), speed(0.6, "sequence"), IVS),
+                    repeat(3, [
+                        fire(direction(20, "sequence"), speed(0, "sequence"), RS),
+                    ]),
+                    wait(3),
+                ]),
+            ]),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(60),
+                repeat(20, [
+                    fire(direction(10, "sequence"), IVS),
+                    repeat(4, [
+                        fire(direction(90, "sequence"), speed(20), IVS(actionRef("bit"))),
+                    ]),
+                    wait(20),
+                ]),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(speed(4), IVS),
+            repeat(3, [
+                fire(direction(90, "relative"), speed(0.8, "sequence"), RCL),
+            ]),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(60),
+                repeat(20, [
+                    fire(direction(-10, "sequence"), IVS),
+                    repeat(4, [
+                        fire(direction(90, "sequence"), speed(20), IVS(actionRef("bit"))),
+                    ]),
+                    wait(20),
+                ]),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(speed(4), IVS),
+            repeat(3, [
+                fire(direction(90, "relative"), speed(0.8, "sequence"), BCL),
+            ]),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(60),
+                repeat(18, [
+                    fire(direction(20, "sequence"), speed(2), BCS(actionRef("seed"))),
+                ]),
+            ]),
+        ]),
+        seed: action([
+            wait(20),
+            changeSpeed(speed(0), 20),
+            wait(20),
+            fire(speed(7), RCS),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top: action([
+            repeat(999, [
+                wait(120),
+                repeat(10, [
+                    fire(direction(6, "sequence"), IVS),
+                    repeat(8, [
+                        fire(direction(360 / 8, "sequence"), speed(20), IVS(actionRef("bit"))),
+                    ]),
+                    wait(7),
+                ]),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(direction(-90, "relative"), speed(5), BCL),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.middle = [Danmaku.middle.last];
 })();
