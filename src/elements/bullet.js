@@ -3,7 +3,6 @@ tm.define("Bullet", {
     init: function(size, frameIndex, eraseFrameIndex) {
         this.superInit("bullet", 64, 64);
         this.baseFrameIndex = this.frameIndex = frameIndex;
-        // this.frameIndex = frameIndex + 3;
         this.eraseFrameIndex = eraseFrameIndex;
 
         this.boundingType = "circle";
@@ -20,6 +19,16 @@ tm.define("Bullet", {
         this.on("removed", function() {
             this.pool.push(this);
         });
+    },
+    reset: function(runner) {
+        this.clearEventListener("enterframe");
+        this.image = tm.asset.Manager.get("bullet");
+        this.frameIndex = this.baseFrameIndex;
+        this.erasing = false;
+        this.runner = runner;
+        this.position.setObject(runner);
+        this.itemize = false;
+        this.age = 0;
     },
     update: function(app) {
         if (this.runner === null) {
@@ -49,13 +58,14 @@ tm.define("Bullet", {
             this.frameIndex = this.eraseFrameIndex;
             this.erasing = true;
             this.on("enterframe", function() {
-                if (this.age % 2 === 0) {
+                if (this.age % 3 === 0) {
                     this.frameIndex += 1;
                 }
                 if (this.frameIndex >= this.eraseFrameIndex + 8) {
                     if (this.parent) this.remove();
                 }
             });
+            this.flare("erased");
         } else if (!this.visible) {
             if (this.parent) this.remove();
         }
@@ -134,14 +144,7 @@ tm.define("BulletPool", {
     get: function(type, runner) {
         var bullet = this.pools[type].shift();
         if (bullet !== undefined) {
-            bullet.clearEventListener("enterframe");
-            bullet.image = tm.asset.Manager.get("bullet");
-            bullet.frameIndex = bullet.baseFrameIndex;
-            bullet.erasing = false;
-            bullet.runner = runner;
-            bullet.position.setObject(runner);
-            bullet.itemize = false;
-            bullet.age = 0;
+            bullet.reset(runner);
             runner.onVanish = function() {
                 if (bullet.parent) bullet.remove();
             };

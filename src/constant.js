@@ -1,6 +1,6 @@
 var APP_URL = "http://www.dev7.jp";
 var TITLE_TWEET = "たまを　よけろ";
-var RESULT_URL = TITLE_TWEET + " SCORE: {score} flick";
+var RESULT_URL = TITLE_TWEET + " SCORE: {score}";
 var TARGET = 'release';
 
 var FONT_CODE = {

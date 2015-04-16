@@ -6,6 +6,9 @@ tm.define("GameScene", {
         this.superInit();
         this.fromJSON({
             children: {
+                erasingTimer: {
+                    type: "tm.app.Element"
+                },
                 backgroundLayer: {
                     type: "CanvasLayer",
                     init: "#back",
@@ -183,8 +186,7 @@ tm.define("GameScene", {
                 return;
             }
             gameScene.bullets.push(bullet);
-            bullet.onremoved = function() {
-                gameScene.bullets.erase(this);
+            bullet.onerased = function() {
                 if (this.itemize) {
                     var star = gameScene.starPool.get();
                     if (star !== null) {
@@ -195,6 +197,9 @@ tm.define("GameScene", {
                         gameScene.stars.push(star);
                     }
                 }
+            };
+            bullet.onremoved = function() {
+                gameScene.bullets.erase(this);
             };
             bullet.addChildTo(gameScene.bulletLayer);
         };
@@ -213,6 +218,7 @@ tm.define("GameScene", {
         this.countDown = 200;
         this.enemyInterval = 200;
         this.step = 0;
+        this.erasingBullets = false;
 
         this.enemies = [];
         this.shots = [
@@ -267,7 +273,7 @@ tm.define("GameScene", {
             this.weight = 1.0;
         }
 
-        if (this.player.muteki) {
+        if (this.player.muteki || this.erasingBullets) {
             this.eraseAllBullets(false);
         }
     },
@@ -343,6 +349,10 @@ tm.define("GameScene", {
                         var se = ["sound/exp1", "sound/exp2", "sound/exp3"].pickup();
                         tm.sound.SoundManager.play(se);
                         if (enemy.erasing) {
+                            this.erasingBullets = true;
+                            this.erasingTimer.tweener.clear().wait(500).call(function() {
+                                this.erasingBullets = false;
+                            }.bind(this));
                             this.eraseAllBullets(true);
                         }
 

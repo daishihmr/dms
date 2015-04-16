@@ -120,7 +120,7 @@ tm.define("MiddleEnemy0", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = false;
+        this.erasing = true;
 
         this.tweener
             .to({
@@ -140,7 +140,7 @@ tm.define("MiddleEnemy1", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = false;
+        this.erasing = true;
 
         this.tweener
             .to({

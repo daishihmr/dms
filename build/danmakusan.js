@@ -79,7 +79,7 @@ CanvasLayer.prototype.accessor.visible = {
 
 var APP_URL = "http://www.dev7.jp";
 var TITLE_TWEET = "たまを　よけろ";
-var RESULT_URL = TITLE_TWEET + " SCORE: {score} flick";
+var RESULT_URL = TITLE_TWEET + " SCORE: {score}";
 var TARGET = 'release';
 
 var FONT_CODE = {
@@ -1329,7 +1329,7 @@ tm.define("MiddleEnemy0", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = false;
+        this.erasing = true;
 
         this.tweener
             .to({
@@ -1349,7 +1349,7 @@ tm.define("MiddleEnemy1", {
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = false;
+        this.erasing = true;
 
         this.tweener
             .to({
@@ -1430,7 +1430,6 @@ tm.define("Bullet", {
     init: function(size, frameIndex, eraseFrameIndex) {
         this.superInit("bullet", 64, 64);
         this.baseFrameIndex = this.frameIndex = frameIndex;
-        // this.frameIndex = frameIndex + 3;
         this.eraseFrameIndex = eraseFrameIndex;
 
         this.boundingType = "circle";
@@ -1447,6 +1446,16 @@ tm.define("Bullet", {
         this.on("removed", function() {
             this.pool.push(this);
         });
+    },
+    reset: function(runner) {
+        this.clearEventListener("enterframe");
+        this.image = tm.asset.Manager.get("bullet");
+        this.frameIndex = this.baseFrameIndex;
+        this.erasing = false;
+        this.runner = runner;
+        this.position.setObject(runner);
+        this.itemize = false;
+        this.age = 0;
     },
     update: function(app) {
         if (this.runner === null) {
@@ -1476,13 +1485,14 @@ tm.define("Bullet", {
             this.frameIndex = this.eraseFrameIndex;
             this.erasing = true;
             this.on("enterframe", function() {
-                if (this.age % 2 === 0) {
+                if (this.age % 3 === 0) {
                     this.frameIndex += 1;
                 }
                 if (this.frameIndex >= this.eraseFrameIndex + 8) {
                     if (this.parent) this.remove();
                 }
             });
+            this.flare("erased");
         } else if (!this.visible) {
             if (this.parent) this.remove();
         }
@@ -1561,14 +1571,7 @@ tm.define("BulletPool", {
     get: function(type, runner) {
         var bullet = this.pools[type].shift();
         if (bullet !== undefined) {
-            bullet.clearEventListener("enterframe");
-            bullet.image = tm.asset.Manager.get("bullet");
-            bullet.frameIndex = bullet.baseFrameIndex;
-            bullet.erasing = false;
-            bullet.runner = runner;
-            bullet.position.setObject(runner);
-            bullet.itemize = false;
-            bullet.age = 0;
+            bullet.reset(runner);
             runner.onVanish = function() {
                 if (bullet.parent) bullet.remove();
             };
@@ -2032,6 +2035,9 @@ tm.define("GameScene", {
         this.superInit();
         this.fromJSON({
             children: {
+                erasingTimer: {
+                    type: "tm.app.Element"
+                },
                 backgroundLayer: {
                     type: "CanvasLayer",
                     init: "#back",
@@ -2209,8 +2215,7 @@ tm.define("GameScene", {
                 return;
             }
             gameScene.bullets.push(bullet);
-            bullet.onremoved = function() {
-                gameScene.bullets.erase(this);
+            bullet.onerased = function() {
                 if (this.itemize) {
                     var star = gameScene.starPool.get();
                     if (star !== null) {
@@ -2221,6 +2226,9 @@ tm.define("GameScene", {
                         gameScene.stars.push(star);
                     }
                 }
+            };
+            bullet.onremoved = function() {
+                gameScene.bullets.erase(this);
             };
             bullet.addChildTo(gameScene.bulletLayer);
         };
@@ -2239,6 +2247,7 @@ tm.define("GameScene", {
         this.countDown = 200;
         this.enemyInterval = 200;
         this.step = 0;
+        this.erasingBullets = false;
 
         this.enemies = [];
         this.shots = [
@@ -2293,7 +2302,7 @@ tm.define("GameScene", {
             this.weight = 1.0;
         }
 
-        if (this.player.muteki) {
+        if (this.player.muteki || this.erasingBullets) {
             this.eraseAllBullets(false);
         }
     },
@@ -2369,6 +2378,10 @@ tm.define("GameScene", {
                         var se = ["sound/exp1", "sound/exp2", "sound/exp3"].pickup();
                         tm.sound.SoundManager.play(se);
                         if (enemy.erasing) {
+                            this.erasingBullets = true;
+                            this.erasingTimer.tweener.clear().wait(500).call(function() {
+                                this.erasingBullets = false;
+                            }.bind(this));
                             this.eraseAllBullets(true);
                         }
 
