@@ -252,18 +252,19 @@ tm.define("GameScene", {
 
         this.countDown -= 1;
         if (this.countDown <= 0) {
-            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_ITERVAL_DECR, 40);
+            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_INTERVAL_DECR, 40);
             this.step += 1;
-            var et = this.mt.nextInt(100);
+            // var et = this.mt.nextInt(100);
+            var et = 50;
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;
             } else if (et < 80) {
                 this._launchMiddle();
-                this.countDown = this.enemyInterval * 1.4;
+                this.countDown = this.enemyInterval * 2.0;
             } else {
                 this._launchLarge();
-                this.countDown = this.enemyInterval * 1.8;
+                this.countDown = this.enemyInterval * 4.0;
             }
         }
 

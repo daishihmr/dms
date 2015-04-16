@@ -16,6 +16,8 @@ tm.define("Enemy", {
 
         this.hp = ENEMY_SMALL_HP;
         this.erasing = false;
+        this.starCount = 0;
+        this.fireToBack = true;
 
         this.entered = false;
         this.on("enterframe", function() {
@@ -41,7 +43,7 @@ tm.define("Enemy", {
             return;
         }
 
-        if (this.y < Danmaku.param.target.y) {
+        if (this.fireToBack || this.y < Danmaku.param.target.y) {
             this.runner.x = this.x;
             this.runner.y = this.y;
             this.runner.update();
@@ -61,6 +63,8 @@ tm.define("SmallEnemy0", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
+        this.starCount = 1;
+        this.fireToBack = false;
 
         this.tweener
             .by({
@@ -80,6 +84,8 @@ tm.define("SmallEnemy1", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
+        this.starCount = 1;
+        this.fireToBack = false;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -100,6 +106,8 @@ tm.define("SmallEnemy2", {
         this.runner = Danmaku.small[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_SMALL_HP;
+        this.starCount = 1;
+        this.fireToBack = false;
 
         var v = tm.geom.Vector2(0, 4);
         var t = Danmaku.param.target;
@@ -116,40 +124,46 @@ tm.define("SmallEnemy2", {
 tm.define("MiddleEnemy0", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(100, 120);
+        this.superInit(100, 10);
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
         this.erasing = true;
+        this.starCount = 5;
 
         this.tweener
             .to({
                 y: 120
-            }, 1200, "easeOutQuad");
-
-        this.on("enterframe", function() {
-            this.y += 2;
-        });
+            }, 1200, "easeOutQuad")
+            .wait(3000)
+            .call(function() {
+                this.on("enterframe", function() {
+                    this.y += 1;
+                });
+            }.bind(this));
     }
 });
 
 tm.define("MiddleEnemy1", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(100, 120);
+        this.superInit(100, 130);
         this.runner = Danmaku.middle[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_MIDDLE_HP;
-        this.erasing = true;
+        this.erasing = false;
+        this.starCount = 5;
 
         this.tweener
             .to({
                 y: 120
-            }, 1200, "easeOutQuad");
-
-        this.on("enterframe", function() {
-            this.y += 2;
-        });
+            }, 1200, "easeOutQuad")
+            .wait(3000)
+            .call(function() {
+                this.on("enterframe", function() {
+                    this.y += 1;
+                });
+            }.bind(this));
     }
 });
 
@@ -161,6 +175,7 @@ tm.define("LargeEnemy0", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
+        this.starCount = 20;
 
         this.tweener
             .to({
@@ -181,6 +196,7 @@ tm.define("LargeEnemy1", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
+        this.starCount = 20;
 
         this.one("enterframe", function() {
             this.tweener
@@ -203,6 +219,7 @@ tm.define("LargeEnemy2", {
 
         this.hp = ENEMY_LARGE_HP;
         this.erasing = true;
+        this.starCount = 20;
 
         this.one("enterframe", function() {
             this.tweener
