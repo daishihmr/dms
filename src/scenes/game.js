@@ -121,17 +121,17 @@ tm.define("GameScene", {
                                 this.text = "ステップ " + gameScene.step;
                             }
                         },
-                        debugLabel: {
-                            type: "tm.display.Label",
-                            init: ["", 30],
-                            align: "right",
-                            baseline: "top",
-                            x: SCREEN_WIDTH - 20,
-                            y: 100,
-                            update: function() {
-                                this.text = "enemyInterval " + gameScene.enemyInterval;
-                            }
-                        },
+                        // debugLabel: {
+                        //     type: "tm.display.Label",
+                        //     init: ["", 30],
+                        //     align: "right",
+                        //     baseline: "top",
+                        //     x: SCREEN_WIDTH - 20,
+                        //     y: 100,
+                        //     update: function() {
+                        //         this.text = "enemyInterval " + gameScene.enemyInterval;
+                        //     }
+                        // },
                         zankiLabel: {
                             type: "tm.display.Label",
                             init: ["残機 2", 30],
@@ -231,9 +231,7 @@ tm.define("GameScene", {
         this.bullets = [];
         this.stars = [];
 
-        // tm.sound.SoundManager
-        //     .setVolumeMusic(0.5)
-        //     .playMusic("sound/bgm");
+        tm.sound.SoundManager.playMusic("sound/bgm");
         this.on("exit", function() {
             tm.sound.SoundManager.stopMusic();
         });
@@ -254,17 +252,17 @@ tm.define("GameScene", {
         if (this.countDown <= 0) {
             this.enemyInterval = Math.max(this.enemyInterval - ENEMY_INTERVAL_DECR, 40);
             this.step += 1;
-            // var et = this.mt.nextInt(100);
-            var et = 50;
+            Danmaku.param.speedRate = 1 + Math.sqrt(this.step * 0.05) * 0.1;
+            var et = this.mt.nextInt(100);
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;
             } else if (et < 80) {
                 this._launchMiddle();
-                this.countDown = this.enemyInterval * 2.0;
+                this.countDown = this.enemyInterval * 1.5;
             } else {
                 this._launchLarge();
-                this.countDown = this.enemyInterval * 4.0;
+                this.countDown = this.enemyInterval * 2.5;
             }
         }
 
@@ -320,7 +318,7 @@ tm.define("GameScene", {
             if (star.isHitPoint(player.x, player.y)) {
                 if (star.parent) star.remove();
                 this.stars.erase(star);
-                this.score += 100;
+                this.addScore(100);
                 tm.sound.SoundManager.play("sound/score");
             } else if ((player.x - star.x) * (player.x - star.x) + (player.y - star.y) * (player.y - star.y) < 200 * 200) {
                 star.setTarget(player);
@@ -431,7 +429,7 @@ tm.define("GameScene", {
         var enemyType = this.mt.pickup(Enemy.types.middle);
         (count).times(function(i) {
             var enemy = tm.using(enemyType)(danmakuType)
-                .setPosition(this.mt.range(120, W - 120), -H * this.mt.rangef(0.5, 0.8));
+                .setPosition(this.mt.range(120, W - 120), -H * this.mt.rangef(0.6, 0.9));
             enemy.onadded = function() {
                 gameScene.enemies.push(this);
             };

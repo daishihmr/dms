@@ -70,7 +70,7 @@
 
     Danmaku.middle.push(new bulletml.Root({
         top1: action([
-            repeat(999, [
+            repeat(Infinity, [
                 wait(50),
                 repeat(4, [
                     fire(direction(180 + 90, "absolute"), speed(30), IVS(actionRef("bit"))),
@@ -86,7 +86,7 @@
             vanish(),
         ]),
         top2: action([
-            repeat(999, [
+            repeat(Infinity, [
                 wait(90),
                 fire(speed(3), IVS),
                 repeat(6, [
@@ -99,7 +99,7 @@
     Danmaku.middle.push(new bulletml.Root({
         top: action([
             wait(100),
-            repeat(999, [
+            repeat(Infinity, [
                 fire(IVS),
                 repeat(10, [
                     fire(direction(0, "sequence"), speed(12), BL),
@@ -112,7 +112,7 @@
 
     Danmaku.middle.push(new bulletml.Root({
         top: action([
-            repeat(999, [
+            repeat(Infinity, [
                 wait(100),
                 fire(speed(8), IVS),
                 repeat(10, [
@@ -128,7 +128,7 @@
 
     Danmaku.middle.push(new bulletml.Root({
         top: action([
-            repeat(999, [
+            repeat(Infinity, [
                 wait(60),
                 repeat(20, [
                     fire(direction(10, "sequence"), IVS),
@@ -151,7 +151,7 @@
 
     Danmaku.middle.push(new bulletml.Root({
         top: action([
-            repeat(999, [
+            repeat(Infinity, [
                 wait(60),
                 repeat(20, [
                     fire(direction(-10, "sequence"), IVS),
@@ -174,7 +174,7 @@
 
     Danmaku.middle.push(new bulletml.Root({
         top: action([
-            repeat(999, [
+            repeat(Infinity, [
                 wait(60),
                 repeat(18, [
                     fire(direction(20, "sequence"), speed(2), BCS(actionRef("seed"))),
@@ -192,7 +192,7 @@
 
     Danmaku.middle.push(new bulletml.Root({
         top: action([
-            repeat(999, [
+            repeat(Infinity, [
                 wait(120),
                 repeat(10, [
                     fire(direction(6, "sequence"), IVS),
@@ -210,5 +210,59 @@
         ]),
     }));
 
-    Danmaku.middle = [Danmaku.middle.last];
+    Danmaku.middle.push(new bulletml.Root({
+        top0: action([
+            repeat(Infinity, [
+                wait(80),
+                fire(direction(90 * -0.5), speed(5), RL),
+                repeat(8, [
+                    fire(direction(90 / 8, "sequence"), speed(5), RL),
+                ]),
+            ]),
+        ]),
+        top1: action([
+            repeat(Infinity, [
+                wait(100),
+                fire(direction(50 * -0.5), speed(6), RL),
+                repeat(8, [
+                    fire(direction(50 / 8, "sequence"), speed(6), RL),
+                ]),
+            ]),
+        ]),
+    }));
+
+    Danmaku.middle.push(new bulletml.Root({
+        top0: action([
+            repeat(Infinity, [
+                repeat(3, [
+                    wait(80),
+                    fire(direction(-90, "absolute"), speed(40), IVS(actionRef("bit"))),
+                    fire(direction(+90, "absolute"), speed(40), IVS(actionRef("bit"))),
+                    wait(20),
+                    fire(direction(-90, "absolute"), speed(40), IVS(actionRef("bit2"))),
+                    fire(direction(+90, "absolute"), speed(40), IVS(actionRef("bit2"))),
+                    wait(20),
+                ]),
+                wait(150),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(direction(90 * -0.5), speed(5), BL),
+            repeat(4, [
+                fire(direction(90 / 4, "sequence"), speed(5), BL),
+            ]),
+            vanish(),
+        ]),
+        bit2: action([
+            wait(1),
+            fire(direction(90 * -0.5), speed(6), BL),
+            repeat(3, [
+                fire(direction(90 / 3, "sequence"), speed(6), BL),
+            ]),
+            vanish(),
+        ]),
+    }));
+
+    // Danmaku.middle = [Danmaku.middle.last];
 })();

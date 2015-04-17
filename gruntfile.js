@@ -1,4 +1,6 @@
 var srcFiles = [
+    "libs/tmlib.js",
+    "libs/bulletml.js",
     "src/application.js",
     "src/layeredcanvasrenderer.js",
     "src/canvaslayer.js",

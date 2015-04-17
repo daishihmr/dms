@@ -48,20 +48,20 @@ var BIT_COUNT = 4;
 var BIT_DISTANCE = 6;
 var BIT_FIRST_DISTANCE = 4;
 
-var SHOT_SPEED = 30;
+var SHOT_SPEED = 40;
 
 var BULLET_POOL_SIZE = 256;
 var BULLET_BOUNDING_RADIUS = 4;
 
-var MT_SEED = 10;
+var MT_SEED = 5;
 
 var ENEMY_SMALL_HP = 2;
 var ENEMY_MIDDLE_HP = 10;
-var ENEMY_LARGE_HP = 50;
+var ENEMY_LARGE_HP = 100;
 
-var EXTEND_SCORE = 100000;
+var EXTEND_SCORE = 200000;
 
-var ENEMY_INTERVAL_DECR = 1;
+var ENEMY_INTERVAL_DECR = 0.5;
 
 var isNative = function() {
     return window.cordovaFlag === true;

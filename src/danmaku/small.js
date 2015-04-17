@@ -130,7 +130,7 @@
         ]),
         bit: action([
             wait(1),
-            fire(direction("$1", "relative"), speed("10 + $2 * 0.2"), BCS),
+            fire(direction("$1", "relative"), speed("6.5 + $2 * 0.2"), BCS),
             vanish(),
         ]),
     }));

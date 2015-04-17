@@ -132,8 +132,8 @@ tm.define("MiddleEnemy0", {
         this.starCount = 5;
 
         this.tweener
-            .to({
-                y: 120
+            .by({
+                y: H
             }, 1200, "easeOutQuad")
             .wait(3000)
             .call(function() {
@@ -155,8 +155,8 @@ tm.define("MiddleEnemy1", {
         this.starCount = 5;
 
         this.tweener
-            .to({
-                y: 120
+            .by({
+                y: H
             }, 1200, "easeOutQuad")
             .wait(3000)
             .call(function() {
@@ -191,7 +191,7 @@ tm.define("LargeEnemy0", {
 tm.define("LargeEnemy1", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(150, 0);
+        this.superInit(200, 0);
         this.runner = Danmaku.large[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_LARGE_HP;
@@ -214,7 +214,7 @@ tm.define("LargeEnemy1", {
 tm.define("LargeEnemy2", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(150, 0);
+        this.superInit(200, 0);
         this.runner = Danmaku.large[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_LARGE_HP;

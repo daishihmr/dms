@@ -58,7 +58,7 @@ tm.define("Bullet", {
             this.frameIndex = this.eraseFrameIndex;
             this.erasing = true;
             this.on("enterframe", function() {
-                if (this.age % 3 === 0) {
+                if (this.age % 4 === 0) {
                     this.frameIndex += 1;
                 }
                 if (this.frameIndex >= this.eraseFrameIndex + 8) {
@@ -67,7 +67,7 @@ tm.define("Bullet", {
             });
             this.flare("erased");
         } else if (!this.visible) {
-            if (this.parent) this.remove();
+            // if (this.parent) this.remove();
         }
     },
     isInScreen: function() {

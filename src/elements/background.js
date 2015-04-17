@@ -24,11 +24,11 @@ tm.define("Background", {
             var speed = Math.rand(5, 20);
             var rotSpeed = Math.randf(-5, 5);
             return tm.display.PolygonShape({
-                sides: Math.rand(3, 9),
+                sides: Math.rand(5, 9),
                 width: size,
                 height: size,
-                fillStyle: "hsla({0}, 90%,  5%, 0.1)".format(h),
-                strokeStyle: "hsla({0}, 90%, 80%, 0.1)".format(h),
+                fillStyle: "hsla({0}, 90%,  5%, 0.2)".format(h),
+                strokeStyle: "hsla({0}, 90%, 80%, 0.2)".format(h),
             })
                 .setBlendMode("lighter")
                 .setPosition(Math.rand(0, W), Math.rand(H * -0.5, H * 1.5))
