@@ -33,7 +33,7 @@ tm.define("StarItem", {
             this.y += 3;
         }
 
-        if (H + 30 < this.y) {
+        if (H + 200 < this.y) {
             this.remove();
         }
     },

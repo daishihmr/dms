@@ -290,6 +290,9 @@ tm.define("GameScene", {
             .setAlpha(0)
             .addChildTo(this.hmdLayer)
             .tweener.fadeIn(3000).call(function() {
+                gameScene.nextArguments = {
+                    score: gameScene.score,
+                };
                 gameScene.app.popScene();
             });
     },
