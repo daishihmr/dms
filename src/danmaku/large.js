@@ -8,7 +8,7 @@
     var changeDirection = bulletml.dsl.changeDirection;
     var changeSpeed = bulletml.dsl.changeSpeed;
     var accel = bulletml.dsl.accel;
-    var wait = bulletml.dsl.wait;
+    // var wait = bulletml.dsl.wait;
     var vanish = bulletml.dsl.vanish;
     var repeat = bulletml.dsl.repeat;
     var bindVar = bulletml.dsl.bindVar;
@@ -21,6 +21,9 @@
     var offsetX = bulletml.dsl.offsetX;
     var offsetY = bulletml.dsl.offsetY;
     var autonomy = bulletml.dsl.autonomy;
+    var wait = function(v) {
+        return bulletml.dsl.wait(v * Danmaku.param.interval);
+    };
 
     var RS = function(act) {
         return bullet(act, {
@@ -275,5 +278,31 @@
         ]),
     }));
 
-    // Danmaku.large = [Danmaku.large.last];
+    Danmaku.large.push(new bulletml.Root({
+        top: action([
+            wait(100),
+            repeat(Infinity, [
+                fire(direction(140 * -0.5), speed(0), IVS(actionRef("bit"))),
+                repeat(8, [
+                    fire(direction(140 / 8, "sequence"), speed(0), IVS(actionRef("bit"))),
+                ]),
+                wait(14),
+                fire(direction(140 * -0.5), speed(0), IVS(actionRef("bit"))),
+                repeat(7, [
+                    fire(direction(140 / 7, "sequence"), speed(0), IVS(actionRef("bit"))),
+                ]),
+                wait(14),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(direction(0, "relative"), speed(5.4), RCL),
+            fire(direction(-2, "relative"), speed(5.0), RCL),
+            fire(direction(+2, "relative"), speed(5.0), RCL),
+            fire(direction(0, "relative"), speed(4.6), RCL),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.large = [Danmaku.large.last];
 })();

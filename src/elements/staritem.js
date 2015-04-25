@@ -2,8 +2,12 @@ tm.define("StarItem", {
     superClass: "tm.display.StarShape",
     init: function(pool) {
         this.superInit({
-            width: 30,
-            height: 30,
+            width: 40,
+            height: 40,
+            fillStyle: "transparent",
+            strokeStyle: "hsl(60, 80%, 80%)",
+            sideIndent: 0.7,
+            lineWidth: 4,
         });
         this.pool = pool;
         this.target = null;

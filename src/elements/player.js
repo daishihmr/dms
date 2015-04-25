@@ -26,7 +26,7 @@ tm.define("Player", {
 
         this.positionHistory = [];
 
-        this.shot = Shot();
+        this.shots = [Shot(), Shot()];
         this.bits = Array.range(4).map(function(index) {
             return Bit(this, index);
         }.bind(this));
@@ -60,8 +60,9 @@ tm.define("Player", {
         var bx = this.x;
         var by = this.y;
 
-        if (this.alive && !app.pointing.getPointingStart() && app.pointing.getPointing()) {
-            this.position.add(app.pointing.deltaPosition.mul(PLAYER_SPEED));
+        var p = app.pointing;
+        if (this.alive && p.getPointing() && !p.getPointingStart()) {
+            this.position.add(p.deltaPosition.mul(PLAYER_SPEED));
         }
 
         this.x = Math.clamp(this.x, 6, W - 6);
@@ -90,9 +91,11 @@ tm.define("Player", {
             }
         }
 
-        if (this.shot.parent == null) {
-            this.shot.setPosition(this.x, this.y).addChildTo(this.parent);
-        }
+        this.shots.forEach(function(shot, i) {
+            if (shot.parent == null) {
+                shot.setPosition(this.x + (i - 0.5) * 20, this.y).addChildTo(this.parent);
+            }
+        }.bind(this));
 
         if (this.muteki) {
             this.alpha = (Math.floor(app.frame / 2) % 2) * 0.75 + 0.25;
@@ -116,6 +119,7 @@ tm.define("Bit", {
         this.index = index;
 
         this.shot = Shot();
+        this.shot.alpha = 0.25;
     },
     update: function(app) {
         this.rotation += 20;

@@ -8,7 +8,7 @@
     var changeDirection = bulletml.dsl.changeDirection;
     var changeSpeed = bulletml.dsl.changeSpeed;
     var accel = bulletml.dsl.accel;
-    var wait = bulletml.dsl.wait;
+    // var wait = bulletml.dsl.wait;
     var vanish = bulletml.dsl.vanish;
     var repeat = bulletml.dsl.repeat;
     var bindVar = bulletml.dsl.bindVar;
@@ -21,6 +21,9 @@
     var offsetX = bulletml.dsl.offsetX;
     var offsetY = bulletml.dsl.offsetY;
     var autonomy = bulletml.dsl.autonomy;
+    var wait = function(v) {
+        return bulletml.dsl.wait(v * Danmaku.param.interval);
+    };
 
     var RS = function(act) {
         return bullet(act, {

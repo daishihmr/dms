@@ -42,6 +42,9 @@ module.exports = function(grunt) {
 
         uglify: {
             danmakusan: {
+                options: {
+                    sourceMap: true
+                },
                 files: {
                     "build/danmakusan.min.js": ["build/danmakusan.js"]
                 }

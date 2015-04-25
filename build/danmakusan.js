@@ -22741,7 +22741,7 @@ var ENEMY_LARGE_HP = 100;
 
 var EXTEND_SCORE = 200000;
 
-var ENEMY_INTERVAL_DECR = 0.5;
+var ENEMY_INTERVAL_DECR = 0.75;
 
 var isNative = function() {
     return window.cordovaFlag === true;
@@ -22812,7 +22812,8 @@ var UserData = {
 
 var Danmaku = {};
 Danmaku.param = {
-    speedRate: 1
+    speedRate: 1,
+    interval: 1.0,
 };
 Danmaku.small = [];
 Danmaku.middle = [];
@@ -22828,7 +22829,7 @@ Danmaku.large = [];
     var changeDirection = bulletml.dsl.changeDirection;
     var changeSpeed = bulletml.dsl.changeSpeed;
     var accel = bulletml.dsl.accel;
-    var wait = bulletml.dsl.wait;
+    // var wait = bulletml.dsl.wait;
     var vanish = bulletml.dsl.vanish;
     var repeat = bulletml.dsl.repeat;
     var bindVar = bulletml.dsl.bindVar;
@@ -22841,6 +22842,9 @@ Danmaku.large = [];
     var offsetX = bulletml.dsl.offsetX;
     var offsetY = bulletml.dsl.offsetY;
     var autonomy = bulletml.dsl.autonomy;
+    var wait = function(v) {
+        return bulletml.dsl.wait(v + " * " + Danmaku.param.interval);
+    };
 
     var RS = function(act) {
         return bullet(act, {
@@ -22985,7 +22989,27 @@ Danmaku.large = [];
         ]),
     }));
 
-    // Danmaku.small = [Danmaku.small.last];
+    Danmaku.small.push(new bulletml.Root({
+        top: action([
+            wait(20),
+            fire(speed(1), RL(actionRef("bullet"))),
+        ]),
+        bullet: action([
+            wait(30),
+            changeSpeed(speed(20), 60),
+        ]),
+    }));
+
+    Danmaku.small.push(new bulletml.Root({
+        top: action([
+            repeat(Infinity, [
+                wait(20),
+                fire(speed(6), RS),
+            ]),
+        ]),
+    }));
+
+    Danmaku.small = [Danmaku.small.last];
 })();
 
 (function() {
@@ -22998,7 +23022,7 @@ Danmaku.large = [];
     var changeDirection = bulletml.dsl.changeDirection;
     var changeSpeed = bulletml.dsl.changeSpeed;
     var accel = bulletml.dsl.accel;
-    var wait = bulletml.dsl.wait;
+    // var wait = bulletml.dsl.wait;
     var vanish = bulletml.dsl.vanish;
     var repeat = bulletml.dsl.repeat;
     var bindVar = bulletml.dsl.bindVar;
@@ -23011,6 +23035,9 @@ Danmaku.large = [];
     var offsetX = bulletml.dsl.offsetX;
     var offsetY = bulletml.dsl.offsetY;
     var autonomy = bulletml.dsl.autonomy;
+    var wait = function(v) {
+        return bulletml.dsl.wait(v * Danmaku.param.interval);
+    };
 
     var RS = function(act) {
         return bullet(act, {
@@ -23267,7 +23294,7 @@ Danmaku.large = [];
     var changeDirection = bulletml.dsl.changeDirection;
     var changeSpeed = bulletml.dsl.changeSpeed;
     var accel = bulletml.dsl.accel;
-    var wait = bulletml.dsl.wait;
+    // var wait = bulletml.dsl.wait;
     var vanish = bulletml.dsl.vanish;
     var repeat = bulletml.dsl.repeat;
     var bindVar = bulletml.dsl.bindVar;
@@ -23280,6 +23307,9 @@ Danmaku.large = [];
     var offsetX = bulletml.dsl.offsetX;
     var offsetY = bulletml.dsl.offsetY;
     var autonomy = bulletml.dsl.autonomy;
+    var wait = function(v) {
+        return bulletml.dsl.wait(v * Danmaku.param.interval);
+    };
 
     var RS = function(act) {
         return bullet(act, {
@@ -23534,7 +23564,33 @@ Danmaku.large = [];
         ]),
     }));
 
-    // Danmaku.large = [Danmaku.large.last];
+    Danmaku.large.push(new bulletml.Root({
+        top: action([
+            wait(100),
+            repeat(Infinity, [
+                fire(direction(140 * -0.5), speed(0), IVS(actionRef("bit"))),
+                repeat(8, [
+                    fire(direction(140 / 8, "sequence"), speed(0), IVS(actionRef("bit"))),
+                ]),
+                wait(14),
+                fire(direction(140 * -0.5), speed(0), IVS(actionRef("bit"))),
+                repeat(7, [
+                    fire(direction(140 / 7, "sequence"), speed(0), IVS(actionRef("bit"))),
+                ]),
+                wait(14),
+            ]),
+        ]),
+        bit: action([
+            wait(1),
+            fire(direction(0, "relative"), speed(5.4), RCL),
+            fire(direction(-2, "relative"), speed(5.0), RCL),
+            fire(direction(+2, "relative"), speed(5.0), RCL),
+            fire(direction(0, "relative"), speed(4.6), RCL),
+            vanish(),
+        ]),
+    }));
+
+    Danmaku.large = [Danmaku.large.last];
 })();
 
 // mt.js 0.2.4 (2005-12-23)
@@ -24582,7 +24638,7 @@ tm.define("Player", {
 
         this.positionHistory = [];
 
-        this.shot = Shot();
+        this.shots = [Shot(), Shot()];
         this.bits = Array.range(4).map(function(index) {
             return Bit(this, index);
         }.bind(this));
@@ -24616,8 +24672,9 @@ tm.define("Player", {
         var bx = this.x;
         var by = this.y;
 
-        if (this.alive && !app.pointing.getPointingStart() && app.pointing.getPointing()) {
-            this.position.add(app.pointing.deltaPosition.mul(PLAYER_SPEED));
+        var p = app.pointing;
+        if (this.alive && p.getPointing() && !p.getPointingStart()) {
+            this.position.add(p.deltaPosition.mul(PLAYER_SPEED));
         }
 
         this.x = Math.clamp(this.x, 6, W - 6);
@@ -24646,9 +24703,11 @@ tm.define("Player", {
             }
         }
 
-        if (this.shot.parent == null) {
-            this.shot.setPosition(this.x, this.y).addChildTo(this.parent);
-        }
+        this.shots.forEach(function(shot, i) {
+            if (shot.parent == null) {
+                shot.setPosition(this.x + (i - 0.5) * 20, this.y).addChildTo(this.parent);
+            }
+        }.bind(this));
 
         if (this.muteki) {
             this.alpha = (Math.floor(app.frame / 2) % 2) * 0.75 + 0.25;
@@ -24672,6 +24731,7 @@ tm.define("Bit", {
         this.index = index;
 
         this.shot = Shot();
+        this.shot.alpha = 0.25;
     },
     update: function(app) {
         this.rotation += 20;
@@ -24829,8 +24889,12 @@ tm.define("StarItem", {
     superClass: "tm.display.StarShape",
     init: function(pool) {
         this.superInit({
-            width: 30,
-            height: 30,
+            width: 40,
+            height: 40,
+            fillStyle: "transparent",
+            strokeStyle: "hsl(60, 80%, 80%)",
+            sideIndent: 0.7,
+            lineWidth: 4,
         });
         this.pool = pool;
         this.target = null;
@@ -25164,13 +25228,25 @@ tm.define("GameScene", {
                         },
                         stepLabel: {
                             type: "tm.display.Label",
-                            init: ["ステップ 0", 30],
+                            init: ["0 光年", 30],
                             align: "right",
                             baseline: "top",
                             x: SCREEN_WIDTH - 20,
                             y: 60,
                             update: function() {
-                                this.text = "ステップ " + gameScene.step;
+                                var before = this.text;
+                                this.text = Math.floor(gameScene.step / 20) + " 光年";
+                                if (this.text !== before) {
+                                    this.tweener.clear()
+                                        .to({
+                                            scaleX: 2,
+                                            scaleY: 2,
+                                        }, 400, "easeOutBack")
+                                        .to({
+                                            scaleX: 1,
+                                            scaleY: 1,
+                                        }, 400, "easeOutQuad");
+                                }
                             }
                         },
                         // debugLabel: {
@@ -25268,13 +25344,15 @@ tm.define("GameScene", {
         };
 
         this.countDown = 200;
+        this.rank = 0;
         this.enemyInterval = 200;
         this.step = 0;
         this.erasingBullets = false;
 
         this.enemies = [];
         this.shots = [
-            this.player.shot,
+            this.player.shots[0],
+            this.player.shots[1],
             this.player.bits[0].shot,
             this.player.bits[1].shot,
             this.player.bits[2].shot,
@@ -25302,10 +25380,14 @@ tm.define("GameScene", {
 
         this.countDown -= 1;
         if (this.countDown <= 0) {
-            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_INTERVAL_DECR, 40);
+            // this.enemyInterval = Math.max(this.enemyInterval - ENEMY_INTERVAL_DECR, 80);
+            this.enemyInterval = 80;
             this.step += 1;
-            Danmaku.param.speedRate = 1 + Math.sqrt(this.step * 0.05) * 0.1;
-            var et = this.mt.nextInt(100);
+            Danmaku.param.speedRate = 1 + Math.sqrt(this.step * 0.05) * 0.2;
+            // Danmaku.param.interval = Math.max(0.5, Danmaku.param.interval - 0.01);
+            Danmaku.param.interval = 0.5;
+            // var et = this.mt.nextInt(100);
+            var et = 0;
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;
@@ -25314,12 +25396,14 @@ tm.define("GameScene", {
                 this.countDown = this.enemyInterval * 1.5;
             } else {
                 this._launchLarge();
-                this.countDown = this.enemyInterval * 2.5;
+                this.countDown = this.enemyInterval * 2.0;
             }
         }
 
-        if (this.bullets.length > 200) {
-            this.weight = Math.max(1 - (this.bullets.length - 200) / 800, 0.1);
+        if (this.player.alive && !app.pointing.getPointing()) {
+            this.weight = 0.5;
+        } else if (this.bullets.length > 50) {
+            this.weight = Math.max(1 - (this.bullets.length - 50) / 400, 0.1);
         } else {
             this.weight = 1.0;
         }

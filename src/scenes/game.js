@@ -112,13 +112,25 @@ tm.define("GameScene", {
                         },
                         stepLabel: {
                             type: "tm.display.Label",
-                            init: ["ステップ 0", 30],
+                            init: ["0 光年", 30],
                             align: "right",
                             baseline: "top",
                             x: SCREEN_WIDTH - 20,
                             y: 60,
                             update: function() {
-                                this.text = "ステップ " + gameScene.step;
+                                var before = this.text;
+                                this.text = Math.floor(gameScene.step / 20) + " 光年";
+                                if (this.text !== before) {
+                                    this.tweener.clear()
+                                        .to({
+                                            scaleX: 2,
+                                            scaleY: 2,
+                                        }, 400, "easeOutBack")
+                                        .to({
+                                            scaleX: 1,
+                                            scaleY: 1,
+                                        }, 400, "easeOutQuad");
+                                }
                             }
                         },
                         // debugLabel: {
@@ -216,13 +228,15 @@ tm.define("GameScene", {
         };
 
         this.countDown = 200;
+        this.rank = 0;
         this.enemyInterval = 200;
         this.step = 0;
         this.erasingBullets = false;
 
         this.enemies = [];
         this.shots = [
-            this.player.shot,
+            this.player.shots[0],
+            this.player.shots[1],
             this.player.bits[0].shot,
             this.player.bits[1].shot,
             this.player.bits[2].shot,
@@ -250,10 +264,14 @@ tm.define("GameScene", {
 
         this.countDown -= 1;
         if (this.countDown <= 0) {
-            this.enemyInterval = Math.max(this.enemyInterval - ENEMY_INTERVAL_DECR, 40);
+            // this.enemyInterval = Math.max(this.enemyInterval - ENEMY_INTERVAL_DECR, 80);
+            this.enemyInterval = 80;
             this.step += 1;
-            Danmaku.param.speedRate = 1 + Math.sqrt(this.step * 0.05) * 0.1;
-            var et = this.mt.nextInt(100);
+            Danmaku.param.speedRate = 1 + Math.sqrt(this.step * 0.05) * 0.2;
+            // Danmaku.param.interval = Math.max(0.5, Danmaku.param.interval - 0.01);
+            Danmaku.param.interval = 0.5;
+            // var et = this.mt.nextInt(100);
+            var et = 0;
             if (et < 50) {
                 this._launchSmall();
                 this.countDown = this.enemyInterval * 1.0;
@@ -262,12 +280,14 @@ tm.define("GameScene", {
                 this.countDown = this.enemyInterval * 1.5;
             } else {
                 this._launchLarge();
-                this.countDown = this.enemyInterval * 2.5;
+                this.countDown = this.enemyInterval * 2.0;
             }
         }
 
-        if (this.bullets.length > 200) {
-            this.weight = Math.max(1 - (this.bullets.length - 200) / 800, 0.1);
+        if (this.player.alive && !app.pointing.getPointing()) {
+            this.weight = 0.5;
+        } else if (this.bullets.length > 50) {
+            this.weight = Math.max(1 - (this.bullets.length - 50) / 400, 0.1);
         } else {
             this.weight = 1.0;
         }
