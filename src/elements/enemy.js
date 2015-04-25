@@ -170,7 +170,7 @@ tm.define("MiddleEnemy1", {
 tm.define("LargeEnemy0", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(150, 0);
+        this.superInit(200, 0);
         this.runner = Danmaku.large[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_LARGE_HP;

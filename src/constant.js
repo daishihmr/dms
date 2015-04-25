@@ -1,6 +1,8 @@
-var APP_URL = "http://www.dev7.jp";
-var TITLE_TWEET = "たまを　よけろ";
-var RESULT_URL = TITLE_TWEET + " SCORE: {score}";
+var BOARD_ID = null;
+
+var APP_URL = "https://itunes.apple.com/";
+var TITLE_TWEET = "『よけろ！弾幕さん』お手軽弾幕シューティングゲーム";
+var RESULT_URL = TITLE_TWEET + " スコア: {score}";
 var TARGET = 'release';
 
 var FONT_CODE = {

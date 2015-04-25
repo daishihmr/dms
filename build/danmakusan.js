@@ -22676,9 +22676,11 @@ CanvasLayer.prototype.accessor.visible = {
     }
 };
 
-var APP_URL = "http://www.dev7.jp";
-var TITLE_TWEET = "たまを　よけろ";
-var RESULT_URL = TITLE_TWEET + " SCORE: {score}";
+var BOARD_ID = null;
+
+var APP_URL = "https://itunes.apple.com/";
+var TITLE_TWEET = "『よけろ！弾幕さん』お手軽弾幕シューティングゲーム";
+var RESULT_URL = TITLE_TWEET + " スコア: {score}";
 var TARGET = 'release';
 
 var FONT_CODE = {
@@ -23982,7 +23984,7 @@ tm.define("ShareButton", {
         }.$extend(param));
 
         this.message = param.message;
-        this.url = param.url || "http://twitter.com/phi_jp";
+        this.url = param.url || "http://twitter.com/daishi_hmr";
         this.on('push', this._share);
     },
 
@@ -23991,7 +23993,7 @@ tm.define("ShareButton", {
 
         if (isNative()) {
             var message = {
-                text: text + " #FlickArrow #tmlib",
+                text: text + " #弾幕さん #tmlib",
                 activityTypes: ['PostToFacebook'],
                 // activityTypes: ["PostToFacebook", "PostToTwitter", "PostToWeibo", "Message", "Mail", "Print", "CopyToPasteboard", "AssignToContact", "SaveToCameraRoll", "AddToReadingList", "PostToFlickr", "PostToVimeo", "TencentWeibo", "AirDrop"];
                 activityTypes: ["Message", "Mail", "PostToFacebook", "PostToTwitter"],
@@ -24004,7 +24006,7 @@ tm.define("ShareButton", {
             var twitterURL = tm.social.Twitter.createURL({
                 type    : "tweet",
                 text    : text,
-                hashtags: "FlickArrow,tmlib",
+                hashtags: "弾幕さん,tmlib",
                 url     : this.url,
             });
             var win = window.open(twitterURL, 'share window', 'width=400, height=300');
@@ -24046,7 +24048,7 @@ tm.define("HomeButton", {
     init: function(param) {
         this.superInit({
             text: String.fromCharCode(FONT_CODE.home),
-            bgColor: HOME_COLOR,
+            bgColor: "hsl(60, 90%, 40%)",
         }.$extend(param));
     },
 });
@@ -24064,7 +24066,7 @@ tm.define("Life", {
         this.backGroup = tm.display.CanvasElement().addChildTo(this);
         this.frontGroup = tm.display.CanvasElement().addChildTo(this);
         (5).times(function(i) {
-            var h = tm.display.HeartShape({
+            var h = tm.display.StarShape({
                 width: 40,
                 height: 40,
                 fillStyle: "gray",
@@ -24073,7 +24075,7 @@ tm.define("Life", {
             h.y = 0;
         }, this);
         (5).times(function(i) {
-            var h = tm.display.HeartShape({
+            var h = tm.display.StarShape({
                 width: 40,
                 height: 40,
             }).addChildTo(this.frontGroup);
@@ -24331,7 +24333,7 @@ tm.define("MiddleEnemy1", {
 tm.define("LargeEnemy0", {
     superClass: "Enemy",
     init: function(danmakuType) {
-        this.superInit(150, 0);
+        this.superInit(200, 0);
         this.runner = Danmaku.large[danmakuType].createRunner(Danmaku.param);
 
         this.hp = ENEMY_LARGE_HP;
@@ -24858,7 +24860,7 @@ tm.define("StarItem", {
             this.y += 3;
         }
 
-        if (H + 30 < this.y) {
+        if (H + 200 < this.y) {
             this.remove();
         }
     },
@@ -24899,20 +24901,38 @@ tm.define("TitleScene", {
                         width: SCREEN_WIDTH,
                         height: SCREEN_HEIGHT,
                         strokeStyle: "transparent",
-                        fillStyle: "white",
+                        fillStyle: "black",
                     },
                     originX: 0,
                     originY: 0,
                 },
-                title: {
+                title1: {
                     type: "tm.display.Label",
-                    init: ["よけろ！弾幕さん", 60],
-                    fillStyle: "#333",
-                    x: SCREEN_WIDTH * 0.5,
+                    init: ["よけろ！", 60],
+                    x: SCREEN_WIDTH * 0.25,
                     y: SCREEN_HEIGHT * 0.2,
+                    rotation: -15,
+                    fillStyle: "hsl(40, 40%, 50%)",
                 },
+                title2: {
+                    type: "tm.display.Label",
+                    init: ["弾幕さん", 80],
+                    x: SCREEN_WIDTH * 0.4,
+                    y: SCREEN_HEIGHT * 0.3,
+                    fillStyle: "hsl(10, 40%, 50%)",
+                },
+                title3: {
+                    type: "tm.display.Label",
+                    init: ["Ａｐｐ", 80],
+                    x: SCREEN_WIDTH * 0.75,
+                    y: SCREEN_HEIGHT * 0.3,
+                    fillStyle: "hsl(60, 40%, 80%)",
+                },
+
                 life: {
-                    type: "tm.display.CanvasElement"
+                    type: "Life",
+                    x: 180,
+                    y: SCREEN_HEIGHT * 0.45,
                 },
                 playButton: {
                     type: "PlayButton",
@@ -24921,9 +24941,8 @@ tm.define("TitleScene", {
                     },
                     x: SCREEN_WIDTH * 0.5,
                     y: SCREEN_HEIGHT * 0.6,
-                    onpointingend: function() {
-                        this.blink();
-                        tm.sound.SoundManager.play("sound/ok");
+                    update: function(app) {
+                        this.setScale(1.0 + Math.sin(app.frame * 0.15) * 0.05);
                     },
                 },
 
@@ -24978,24 +24997,59 @@ tm.define("TitleScene", {
 
         var scene = this;
 
-        this.playButton.onpush = function() {
-            this.setInteractive(false).blink();
-            tm.display.RectangleShape({
-                    width: SCREEN_WIDTH,
-                    height: SCREEN_HEIGHT,
-                    fillStyle: "black",
-                    strokeStyle: "transparent",
-                })
-                .setOrigin(0, 0)
-                .setAlpha(0)
-                .addChildTo(scene)
-                .tweener.fadeIn(1000).call(function() {
-                    scene.app.popScene();
-                });
-        };
-    },
-});
+        [this.playButton, this.shareButton, this.adButton, this.rankButton].forEach(function(button) {
+            button.y -= SCREEN_HEIGHT;
+            button.tweener.clear().by({
+                y: SCREEN_HEIGHT
+            }, 1200 + tm.util.Random.randint(0, 400), "easeOutBounce");
+        });
 
+        this.playButton.onpush = function() {
+            if (UserData.hasLife()) {
+                tm.sound.SoundManager.play("sound/ok");
+                this.setInteractive(false).blink();
+                if (TARGET === 'release') {
+                    // ライフを減らすやつ
+                    scene.life.ondecrimented = function() {
+                        scene.startGame();
+                    };
+                    scene.life.decriment();
+                } else {
+                    scene.startGame();
+                }
+
+            } else {
+                tm.sound.SoundManager.play("sound/cancel");
+                scene.shareButton.blink();
+                scene.adButton.blink();
+            }
+        };
+
+        this.adButton.onaded = function() {
+            this.life.recovery();
+        }.bind(this);
+
+        this.shareButton.onshared = function() {
+            this.life.recovery();
+        }.bind(this);
+    },
+
+    startGame: function() {
+        var scene = this;
+        tm.display.RectangleShape({
+                width: SCREEN_WIDTH,
+                height: SCREEN_HEIGHT,
+                fillStyle: "black",
+                strokeStyle: "transparent",
+            })
+            .setOrigin(0, 0)
+            .setAlpha(0)
+            .addChildTo(scene)
+            .tweener.fadeIn(1000).call(function() {
+                scene.app.popScene();
+            });
+    }
+});
 tm.define("GameScene", {
     superClass: "tm.app.Scene",
     init: function() {
@@ -25288,6 +25342,9 @@ tm.define("GameScene", {
             .setAlpha(0)
             .addChildTo(this.hmdLayer)
             .tweener.fadeIn(3000).call(function() {
+                gameScene.nextArguments = {
+                    score: gameScene.score,
+                };
                 gameScene.app.popScene();
             });
     },
@@ -25508,6 +25565,20 @@ tm.define("ResultScene", {
     superClass: "tm.app.Scene",
     init: function(param) {
         this.superInit(param);
+
+        var self = this;
+        var userData = UserData.get();
+        var bestScore = (userData.bestScore) ? userData.bestScore : 0;
+        var isHighest = (param.score > bestScore);
+
+        if (isHighest) {
+            userData.bestScore = param.score;
+            UserData.set(userData);
+        }
+
+        // gamecenter にスコアを送る
+        this.sendHighScore(userData.bestScore);
+
         this.fromJSON({
             children: {
                 backgroundLayer: {
@@ -25528,12 +25599,119 @@ tm.define("ResultScene", {
                         }
                     }
                 },
-                text: {
+                title: {
                     type: "tm.display.Label",
-                    init: ["りざると", 50],
+                    init: ["成績", 50],
                     x: SCREEN_WIDTH * 0.5,
-                    y: SCREEN_HEIGHT * 0.5,
+                    y: SCREEN_HEIGHT * 0.1,
+                    fillStyle: "rgb(230, 230, 230)",
                 },
+                scoreTitleLabel: {
+                    type: "tm.display.Label",
+                    init: ["スコア ", 30],
+                    align: "left",
+                    x: SCREEN_WIDTH * 0.2,
+                    y: SCREEN_HEIGHT * 0.2,
+                    fillStyle: "rgb(230, 230, 230)",
+                },
+                scoreLabel: {
+                    type: "tm.display.Label",
+                    init: [param.score + "点", 30],
+                    align: "right",
+                    x: SCREEN_WIDTH * 0.8,
+                    y: SCREEN_HEIGHT * 0.2,
+                    fillStyle: "rgb(230, 230, 230)",
+                },
+                highscoreTitleLabel: {
+                    type: "tm.display.Label",
+                    init: ["ベスト ", 30],
+                    align: "left",
+                    x: SCREEN_WIDTH * 0.2,
+                    y: SCREEN_HEIGHT * 0.3,
+                    fillStyle: "rgb(230, 230, 230)",
+                },
+                highscoreLabel: {
+                    type: "tm.display.Label",
+                    init: [userData.bestScore + "点", 30],
+                    align: "right",
+                    x: SCREEN_WIDTH * 0.8,
+                    y: SCREEN_HEIGHT * 0.3,
+                    fillStyle: "rgb(230, 230, 230)",
+                },
+                updateLabel: {
+                    type: "tm.display.Label",
+                    init: ["new record!!", 27],
+                    align: "right",
+                    x: SCREEN_WIDTH * 0.8,
+                    y: SCREEN_HEIGHT * 0.3 - 30,
+                    visible: isHighest,
+                    fillStyle: "red",
+                    update: function(app) {
+                        this.alpha = 0.5 + (Math.floor(app.frame / 3) % 2) * 0.5;
+                    },
+                },
+
+                life: {
+                    type: "Life",
+                    x: 180,
+                    y: SCREEN_HEIGHT * 0.45,
+                },
+
+                shareButton: {
+                    type: "ShareButton",
+                    init: {
+                        size: 80,
+                        message: RESULT_URL.format(param),
+                        url: APP_URL,
+                    },
+                    x: SCREEN_WIDTH * 0.25,
+                    y: SCREEN_HEIGHT * 0.8,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
+                },
+
+                homeButton: {
+                    type: "HomeButton",
+                    init: {
+                        size: 120,
+                    },
+                    x: SCREEN_WIDTH * 0.5,
+                    y: SCREEN_HEIGHT * 0.6,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                        this.setInteractive(false);
+                        self.exit();
+                    },
+                },
+
+                rankButton: {
+                    type: "RankingButton",
+                    init: {
+                        size: 80,
+                    },
+                    x: SCREEN_WIDTH * 0.5,
+                    y: SCREEN_HEIGHT * 0.85,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
+                },
+                adButton: {
+                    type: "AdButton",
+                    init: {
+                        size: 80,
+                    },
+                    x: SCREEN_WIDTH * 0.75,
+                    y: SCREEN_HEIGHT * 0.8,
+                    onpointingend: function() {
+                        this.blink();
+                        tm.sound.SoundManager.play("sound/ok");
+                    },
+                },
+
                 hmdLayer: {
                     type: "CanvasLayer",
                     init: "#hmd",
@@ -25543,6 +25721,37 @@ tm.define("ResultScene", {
             }
         });
 
+        this.adButton.onaded = function() {
+            this.life.recovery();
+        }.bind(this);
+
+        this.shareButton.onshared = function() {
+            this.life.recovery();
+        }.bind(this);
+
+        if (tm.util.Random.randint(0, 5) === 0) {
+            setTimeout(function() {
+                showAd();
+            }, 1000);
+        }
+    },
+
+    sendHighScore: function(score) {
+        if (window.gamecenter) {
+            var data = {
+                score: score,
+                leaderboardId: BOARD_ID,
+            };
+
+            gamecenter.submitScore(function() {
+                // alert('success');
+            }, function() {
+                // alert('failure');
+            }, data);
+        }
+    },
+
+    exit: function() {
         var scene = this;
         tm.display.RectangleShape({
             width: SCREEN_WIDTH,
@@ -25556,7 +25765,7 @@ tm.define("ResultScene", {
             .tweener.fadeIn(1000).call(function() {
                 scene.app.popScene();
             });
-    }
+    },
 });
 
 tm.main(function() {

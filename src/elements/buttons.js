@@ -182,7 +182,7 @@ tm.define("ShareButton", {
         }.$extend(param));
 
         this.message = param.message;
-        this.url = param.url || "http://twitter.com/phi_jp";
+        this.url = param.url || "http://twitter.com/daishi_hmr";
         this.on('push', this._share);
     },
 
@@ -191,7 +191,7 @@ tm.define("ShareButton", {
 
         if (isNative()) {
             var message = {
-                text: text + " #FlickArrow #tmlib",
+                text: text + " #弾幕さん #tmlib",
                 activityTypes: ['PostToFacebook'],
                 // activityTypes: ["PostToFacebook", "PostToTwitter", "PostToWeibo", "Message", "Mail", "Print", "CopyToPasteboard", "AssignToContact", "SaveToCameraRoll", "AddToReadingList", "PostToFlickr", "PostToVimeo", "TencentWeibo", "AirDrop"];
                 activityTypes: ["Message", "Mail", "PostToFacebook", "PostToTwitter"],
@@ -204,7 +204,7 @@ tm.define("ShareButton", {
             var twitterURL = tm.social.Twitter.createURL({
                 type    : "tweet",
                 text    : text,
-                hashtags: "FlickArrow,tmlib",
+                hashtags: "弾幕さん,tmlib",
                 url     : this.url,
             });
             var win = window.open(twitterURL, 'share window', 'width=400, height=300');
@@ -246,7 +246,7 @@ tm.define("HomeButton", {
     init: function(param) {
         this.superInit({
             text: String.fromCharCode(FONT_CODE.home),
-            bgColor: HOME_COLOR,
+            bgColor: "hsl(60, 90%, 40%)",
         }.$extend(param));
     },
 });
@@ -264,7 +264,7 @@ tm.define("Life", {
         this.backGroup = tm.display.CanvasElement().addChildTo(this);
         this.frontGroup = tm.display.CanvasElement().addChildTo(this);
         (5).times(function(i) {
-            var h = tm.display.HeartShape({
+            var h = tm.display.StarShape({
                 width: 40,
                 height: 40,
                 fillStyle: "gray",
@@ -273,7 +273,7 @@ tm.define("Life", {
             h.y = 0;
         }, this);
         (5).times(function(i) {
-            var h = tm.display.HeartShape({
+            var h = tm.display.StarShape({
                 width: 40,
                 height: 40,
             }).addChildTo(this.frontGroup);
