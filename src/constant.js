@@ -47,8 +47,7 @@ var H = W * 1.2;
 var PLAYER_SPEED = 2.0;
 
 var BIT_COUNT = 4;
-var BIT_DISTANCE = 6;
-var BIT_FIRST_DISTANCE = 4;
+var BIT_DISTANCE = 12;
 
 var SHOT_SPEED = 40;
 

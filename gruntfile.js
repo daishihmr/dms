@@ -42,18 +42,18 @@ module.exports = function(grunt) {
         concat: {
             danmakusan: {
                 src: srcFiles,
-                dest: "build/danmakusan.js"
+                dest: "build/danmakusan.js",
             },
         },
 
         uglify: {
             danmakusan: {
+                files: {
+                    "build/danmakusan.min.js": ["build/danmakusan.js"]
+                },
                 options: {
                     sourceMap: true
                 },
-                files: {
-                    "build/danmakusan.min.js": ["build/danmakusan.js"]
-                }
             },
         },
 

@@ -22725,8 +22725,7 @@ var H = W * 1.2;
 var PLAYER_SPEED = 2.0;
 
 var BIT_COUNT = 4;
-var BIT_DISTANCE = 6;
-var BIT_FIRST_DISTANCE = 4;
+var BIT_DISTANCE = 12;
 
 var SHOT_SPEED = 40;
 
@@ -24660,7 +24659,7 @@ tm.define("Player", {
         this.bits.forEach(function(bit) {
             this.parent.addChildAt(bit, 0);
         }.bind(this));
-        this.positionHistory = Array.range((BIT_COUNT + 1) * BIT_DISTANCE + BIT_FIRST_DISTANCE).map(function() {
+        this.positionHistory = Array.range((BIT_COUNT + 1) * BIT_DISTANCE).map(function() {
             return {
                 x: this.x,
                 y: this.y,
@@ -24698,7 +24697,7 @@ tm.define("Player", {
                 x: this.x,
                 y: this.y,
             });
-            if (this.positionHistory.length > (BIT_COUNT + 1) * BIT_DISTANCE + BIT_FIRST_DISTANCE) {
+            if (this.positionHistory.length > (BIT_COUNT + 1) * BIT_DISTANCE) {
                 this.positionHistory.shift();
             }
         }
@@ -24736,7 +24735,7 @@ tm.define("Bit", {
     update: function(app) {
         this.rotation += 20;
 
-        var p = this.player.positionHistory[(1 + this.index) * 6];
+        var p = this.player.positionHistory[(1 + this.index) * BIT_DISTANCE];
         if (p === undefined) {
             p = {
                 x: this.player.x,
@@ -24766,6 +24765,7 @@ tm.define("PlayerCollisionCircle", {
         this.setScale(1.0 + Math.sin(app.frame * 0.4) * 0.2);
     }
 });
+
 tm.define("Shot", {
     superClass: "tm.display.RectangleShape",
     init: function() {
