@@ -29,9 +29,15 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-contrib-concat");
     grunt.loadNpmTasks("grunt-contrib-uglify");
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-contrib-copy');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON("package.json"),
+
+        clean: {
+            danmakusan: ["build", "cordova/www"],
+        },
 
         concat: {
             danmakusan: {
@@ -51,8 +57,16 @@ module.exports = function(grunt) {
             },
         },
 
+        copy: {
+            danmakusan: {
+                expand: true,
+                src: ["index.html", "build/danmakusan.min.js", "assets/**"],
+                dest: "cordova/www/",
+            },
+        },
+
         watch: {
-            precure: {
+            danmakusan: {
                 tasks: ["concat", "uglify"],
                 files: srcFiles
             }
@@ -60,4 +74,5 @@ module.exports = function(grunt) {
     });
 
     grunt.registerTask("default", ["concat", "uglify"]);
+    grunt.registerTask("cordova", ["clean", "concat", "uglify", "copy"]);
 };
